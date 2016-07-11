@@ -69,7 +69,7 @@ class adaptretreat:
         print ''
 
 
-
+#parameters:(number of regions, prob flood, prob action, influence threshold, number of iterations)
 ar_1 = adaptretreat(10,.2,.5,.1,500)
 ar_1.populate()
 ar_1.update()
