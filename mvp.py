@@ -25,7 +25,7 @@ class adaptretreat:
         #then want each element of flooded to equal zero, for now
         self.flooded = [0 for x in range(self.regions)]
         self.action = [0 for x in range(self.regions)]
-        #then we will see who wants to act (assuming in this version that they all should
+        #then we will see who wants to act (assuming in this version that they all should if behaving rationa
         print 'initial:'
         self.plot_eile()    
         self.decide_action()
@@ -33,7 +33,9 @@ class adaptretreat:
         self.plot_eile()    
 
     def is_worried(self):
+        # returns TRUE when fraction flooded greater than influence threshold
         #this could be extended when agents are affected by different agents differently
+        #print float(sum(self.flooded)) / self.regions 
         return float(sum(self.flooded)) / self.regions > self.influence_threshold
 
 
@@ -52,7 +54,7 @@ class adaptretreat:
         print 'after observation:'
         for iter in range(self.n_iterations):
             self.is_flooded()
-            self.decide_action()
+            #self.decide_action()
             if self.is_worried():
                 self.decide_action()
             self.plot_eile()  
@@ -68,7 +70,7 @@ class adaptretreat:
 
 
 
-ar_1 = adaptretreat(10,.2,.5,.5,500)
+ar_1 = adaptretreat(10,.2,.5,.1,500)
 ar_1.populate()
 ar_1.update()
 
