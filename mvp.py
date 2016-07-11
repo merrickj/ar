@@ -17,13 +17,13 @@ class adaptretreat:
         self.n_iterations = n_iterations
         self.action = []
         # 0 if no action, 1 if action
-        self.flooded = []
-        # 0 if not flooded, 1 if flooded
+        self.damaged = []
+        # 0 if not damaged, 1 if damaged
 
     def populate(self):
-        #want action and flooded to be a vector of length number of regions
-        #then want each element of flooded to equal zero, for now
-        self.flooded = [0 for x in range(self.regions)]
+        #want action and damaged to be a vector of length number of regions
+        #then want each element of damaged to equal zero, for now
+        self.damaged = [0 for x in range(self.regions)]
         self.action = [0 for x in range(self.regions)]
         #then we will see who wants to act (assuming in this version that they all should if behaving rationa
         print 'initial:'
@@ -33,17 +33,17 @@ class adaptretreat:
         self.plot_eile()    
 
     def is_worried(self):
-        # returns TRUE when fraction flooded greater than influence threshold
+        # returns TRUE when fraction damaged greater than influence threshold
         #this could be extended when agents are affected by different agents differently
-        #print float(sum(self.flooded)) / self.regions 
-        return float(sum(self.flooded)) / self.regions > self.influence_threshold
+        #print float(sum(self.damaged)) / self.regions 
+        return float(sum(self.damaged)) / self.regions > self.influence_threshold
 
 
-    def is_flooded(self):
+    def is_damaged(self):
         for i in range(self.regions):
             if self.action[i] == 0:
                 if random.random() < self.prob_flood:
-                    self.flooded[i] = 1
+                    self.damaged[i] = 1
 
     def decide_action(self):
             for i in range(self.regions):
@@ -54,7 +54,7 @@ class adaptretreat:
     def update(self):
         print 'after observation:'
         for iter in range(self.n_iterations):
-            self.is_flooded()
+            self.is_damaged()
             #self.decide_action()
             if self.is_worried():
                 self.decide_action()
