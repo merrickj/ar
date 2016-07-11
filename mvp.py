@@ -63,7 +63,7 @@ class adaptretreat:
 
 
     def plot_eile(self):
-        agent_colors = {0:'+', 1:'-'}        
+        agent_colors = {0:'0', 1:'1'}        
         for i in range(self.regions):
                 print agent_colors[self.action[i]],
         print ''
@@ -73,5 +73,6 @@ class adaptretreat:
 ar_1 = adaptretreat(10,.2,.5,.1,500)
 ar_1.populate()
 ar_1.update()
+print '0 = no action, 1 = action'
 
 
