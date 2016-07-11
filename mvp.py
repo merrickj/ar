@@ -41,8 +41,9 @@ class adaptretreat:
 
     def is_flooded(self):
         for i in range(self.regions):
-            if random.random() < self.prob_flood:
-                self.flooded[i] = 1
+            if self.action[i] == 0:
+                if random.random() < self.prob_flood:
+                    self.flooded[i] = 1
 
     def decide_action(self):
             for i in range(self.regions):
@@ -73,6 +74,6 @@ class adaptretreat:
 ar_1 = adaptretreat(10,.2,.5,.1,500)
 ar_1.populate()
 ar_1.update()
-print '0 = no action, 1 = action'
+print '[0 = no action, 1 = action]'
 
 
