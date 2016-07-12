@@ -3,10 +3,10 @@
 
 
 #import matplotlib.pyplot as plt
-import itertools
+#import itertools
 import random
-import copy
-
+#import copy
+import sys
 
 class adaptretreat:
     def __init__(self, regions, prob_flood, prob_act, influence_threshold, n_iterations):
@@ -79,7 +79,10 @@ class adaptretreat:
 
 
 #parameters:(number of regions, prob flood, prob action, influence threshold, number of iterations)
-ar_1 = adaptretreat(10,.2,.5,.5,500)
+#ar_1 = adaptretreat(10,.2,.5,.5,500)
+arg=sys.argv
+ar_1 = adaptretreat(int(float(arg[1])),float(arg[2]),float(arg[3]),float(arg[4]),500)
+print arg
 ar_1.populate()
 ar_1.update()
 print '[0 = no action, 1 = action]'
