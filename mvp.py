@@ -19,6 +19,8 @@ class adaptretreat:
         # 0 if no action, 1 if action
         self.damaged = []
         # 0 if not damaged, 1 if damaged
+        self.initial_noact = []
+        self.count = 0
 
     def populate(self):
         #want action and damaged to be a vector of length number of regions
@@ -29,14 +31,15 @@ class adaptretreat:
         print 'initial:'
         self.plot_eile()    
         self.decide_action()
+        self.initial_noact = self.regions-sum(self.action)
         print 'before flooding:'
         self.plot_eile()    
 
     def is_worried(self):
-        # returns TRUE when fraction damaged greater than influence threshold
+        # returns TRUE when fraction of those who did not originally act damaged greater than influence threshold
         #this could be extended when agents are affected by different agents differently
         #print float(sum(self.damaged)) / self.regions 
-        return float(sum(self.damaged)) / self.regions > self.influence_threshold
+        return float(sum(self.damaged)) / self.initial_noact > self.influence_threshold
 
 
     def is_damaged(self):
@@ -44,6 +47,7 @@ class adaptretreat:
             if self.action[i] == 0:
                 if random.random() < self.prob_flood:
                     self.damaged[i] = 1
+                    self.count = self.count + 1
 
     def decide_action(self):
             for i in range(self.regions):
@@ -69,11 +73,17 @@ class adaptretreat:
                 print agent_colors[self.action[i]],
         print ''
 
+    def print_count(self):
+        print ''
+        print 'Total number of extra floodings: ',self.count        
+
 
 #parameters:(number of regions, prob flood, prob action, influence threshold, number of iterations)
-ar_1 = adaptretreat(10,.2,.5,.1,500)
+ar_1 = adaptretreat(10,.2,.5,.5,500)
 ar_1.populate()
 ar_1.update()
 print '[0 = no action, 1 = action]'
+ar_1.print_count()
+
 
 
