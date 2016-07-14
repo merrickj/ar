@@ -47,7 +47,7 @@ class adaptretreat:
                 #print 'self.alpha',self.alpha
                 #print 'self.hits[i]',self.hits[i]
                 #basically seems that prob_act goes to zero too quickly. prob_act probably should not go to zero once a single zero prob_alpha comes along. what would make more sense would be for prob_act to decline...? or alternatively a mechanism where it could grow more quickly once the waves hit -now attempted to adjust by only having initial prob_act in equation below
-                self.prob_alpha[i] = self.alpha * (float(self.hits[i])/(iter+1)) + ((1-self.alpha)*(float(sum(self.hits)-self.hits[i])/(self.potential - 1)))
+                self.prob_alpha[i] = self.alpha * (float(self.hits[i])/(iter+1)) + ((1-self.alpha)*(float(sum(self.hits)-self.hits[i])/(self.potential - (iter+1))))
             else:
                 self.prob_alpha[i] = self.prob_flood # would be computationally better not to do it this way, but want to get it working for now
         print 'prob_alpha ', self.prob_alpha
