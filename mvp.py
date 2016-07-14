@@ -20,6 +20,8 @@ class adaptretreat:
         # 0 if not damaged, 1 if damaged
         self.initial_noact = []
         self.hits = []
+        self.potential = 0
+        self.alpha = (1/self.regions)
 
     def populate(self):
         #want action and damaged to be a vector of length number of regions
@@ -46,9 +48,9 @@ class adaptretreat:
     def update_flood_perception(self,iter):
         for i in range(self.regions):
             if self.action[i] == 0:
-                self.prob_alpha[i] = self.alpha * (self.hits[i]/iter) + ((1-self.alpha)*(sum hits.exclude_i)/some_proper_track_of_potentials)
+                self.prob_alpha[i] = self.alpha * (self.hits[i]/iter) + ((1-self.alpha)*((sum(self.hits)-self.hits[i])/(self.potential - 1)))
             else:
-                self.prob_alpha[i] = 1 # would be computationally better not to do it this way, but want to get it working for now
+                self.prob_alpha[i] = self.prob_flood # would be computationally better not to do it this way, but want to get it working for now
             print 'prob_alpha ', self.prob_alpha
 
     def update_prob_act(self):
@@ -56,6 +58,7 @@ class adaptretreat:
             self.prob_act[i] = self.prob_act[i] * (self.prob_alpha[i]/self.prob_flood)
             
     def is_damaged(self):
+        self.potential = self.potential + (self.regions-sum(self.action))
         for i in range(self.regions):
             if self.action[i] == 0:
                 if random.random() < self.prob_flood:
@@ -67,7 +70,7 @@ class adaptretreat:
                 if self.action[i] == 0:
                     if random.random() < self.prob_act[i]:
                         self.action[i] = 1         
-
+                                                                        
     def update(self):
         print 'after observation:'
         for iter in range(self.n_iterations):
