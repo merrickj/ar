@@ -8,11 +8,10 @@ import random
 import sys
 
 class adaptretreat:
-    def __init__(self, regions, prob_flood, init_prob_act, influence_threshold, n_iterations):
+    def __init__(self, regions, prob_flood, init_prob_act, n_iterations):
         self.regions = regions
         self.prob_flood = prob_flood 
         self.init_prob_act = init_prob_act
-        self.influence_threshold = influence_threshold
         self.n_iterations = n_iterations
         self.action = []
         # 0 if no action, 1 if action
@@ -21,13 +20,15 @@ class adaptretreat:
         self.initial_noact = []
         self.hits = []
         self.potential = 0
-        self.alpha = (1/self.regions)
+        self.alpha = 2*(float(1)/self.regions)
+        self.prob_alpha = []
 
     def populate(self):
         #want action and damaged to be a vector of length number of regions
         #then want each element of damaged to equal zero, for now
         self.damaged = [0 for x in range(self.regions)]
         self.action = [0 for x in range(self.regions)]
+        self.prob_alpha = [self.prob_flood for x in range(self.regions)]
         self.prob_act = [self.init_prob_act for x in range(self.regions)]
         self.hits =  [0 for x in range(self.regions)]
         #then we will see who wants to act (assuming in this version that they all should if behaving rationa
@@ -38,25 +39,24 @@ class adaptretreat:
         print 'before flooding:'
         self.plot_eile()    
 
-    def is_worried(self):
-        # returns TRUE when fraction of those who did not originally act damaged greater than influence threshold
-        #this could be extended when agents are affected by different agents differently
-        #print float(sum(self.damaged)) / self.regions 
-        return float(sum(self.damaged)) / self.initial_noact > self.influence_threshold
-
 
     def update_flood_perception(self,iter):
         for i in range(self.regions):
             if self.action[i] == 0:
-                self.prob_alpha[i] = self.alpha * (self.hits[i]/iter) + ((1-self.alpha)*((sum(self.hits)-self.hits[i])/(self.potential - 1)))
+                #print self.alpha, self.hits[i], iter, self.hits, self.potential
+                #print 'self.alpha',self.alpha
+                #print 'self.hits[i]',self.hits[i]
+                self.prob_alpha[i] = self.alpha * (float(self.hits[i])/(iter+1)) + ((1-self.alpha)*(float(sum(self.hits)-self.hits[i])/(self.potential - 1)))
             else:
                 self.prob_alpha[i] = self.prob_flood # would be computationally better not to do it this way, but want to get it working for now
-            print 'prob_alpha ', self.prob_alpha
+            #print 'prob_alpha ', self.prob_alpha
 
     def update_prob_act(self):
         for i in range(self.regions):
-            self.prob_act[i] = self.prob_act[i] * (self.prob_alpha[i]/self.prob_flood)
-            
+            #print 'self.pa',self.prob_alpha
+            self.prob_act[i] = self.prob_act[i] * (float(self.prob_alpha[i])/self.prob_flood)
+            #print 'self.pact',self.prob_act
+
     def is_damaged(self):
         self.potential = self.potential + (self.regions-sum(self.action))
         for i in range(self.regions):
@@ -80,6 +80,9 @@ class adaptretreat:
             self.decide_action()
             #if self.is_worried():
             self.plot_eile()  
+            #print self.prob_act
+            #print self.prob_alpha
+            #print self.hits
             if sum(self.action) == self.regions:
                 break
 
@@ -98,12 +101,12 @@ class adaptretreat:
 #parameters:(number of regions, prob flood, prob action, influence threshold, number of iterations)
 #ar_1 = adaptretreat(10,.2,.5,.5,500)
 arg=sys.argv
-ar_1 = adaptretreat(int(float(arg[1])),float(arg[2]),float(arg[3]),float(arg[4]),500)
+ar_1 = adaptretreat(int(float(arg[1])),float(arg[2]),float(arg[3]),500)
 print arg
 ar_1.populate()
 ar_1.update()
 print '[0 = no action, 1 = action]'
-ar_1.print_count()
+#ar_1.print_count()
 
 
 
