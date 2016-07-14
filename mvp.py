@@ -46,18 +46,20 @@ class adaptretreat:
                 #print self.alpha, self.hits[i], iter, self.hits, self.potential
                 #print 'self.alpha',self.alpha
                 #print 'self.hits[i]',self.hits[i]
+                #basically seems that prob_act goes to zero too quickly. prob_act probably should not go to zero once a single zero prob_alpha comes along. what would make more sense would be for prob_act to decline...? or alternatively a mechanism where it could grow more quickly once the waves hit
                 self.prob_alpha[i] = self.alpha * (float(self.hits[i])/(iter+1)) + ((1-self.alpha)*(float(sum(self.hits)-self.hits[i])/(self.potential - 1)))
             else:
                 self.prob_alpha[i] = self.prob_flood # would be computationally better not to do it this way, but want to get it working for now
-            #print 'prob_alpha ', self.prob_alpha
+        print 'prob_alpha ', self.prob_alpha
 
     def update_prob_act(self):
+        print 'self.pact before ',self.prob_act
         for i in range(self.regions):
             #print 'self.pa',self.prob_alpha
             self.prob_act[i] = self.prob_act[i] * (float(self.prob_alpha[i])/self.prob_flood)
             self.prob_act[i] = max(0.01,self.prob_act[i])
             self.prob_act[i] = min(1,self.prob_act[i])
-            #print 'self.pact',self.prob_act
+        print 'self.pact',self.prob_act
 
     def is_damaged(self):
         self.potential = self.potential + (self.regions-sum(self.action))
