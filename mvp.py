@@ -55,6 +55,8 @@ class adaptretreat:
         for i in range(self.regions):
             #print 'self.pa',self.prob_alpha
             self.prob_act[i] = self.prob_act[i] * (float(self.prob_alpha[i])/self.prob_flood)
+            self.prob_act[i] = max(0.01,self.prob_act[i])
+            self.prob_act[i] = min(1,self.prob_act[i])
             #print 'self.pact',self.prob_act
 
     def is_damaged(self):
@@ -84,6 +86,8 @@ class adaptretreat:
             #print self.prob_alpha
             #print self.hits
             if sum(self.action) == self.regions:
+                print 'ends at observation ',iter
+                print self.prob_act
                 break
 
 
