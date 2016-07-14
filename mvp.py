@@ -1,32 +1,33 @@
 # James Merrick, July 8th 2016
 # Minimum viable product of adapt/retreat moel
 
+# James Merrick, July 13th 2016
+# Updated structure following discussion with Melanie Craxton
 
-#import matplotlib.pyplot as plt
-#import itertools
 import random
-#import copy
 import sys
 
 class adaptretreat:
-    def __init__(self, regions, prob_flood, prob_act, influence_threshold, n_iterations):
+    def __init__(self, regions, prob_flood, init_prob_act, influence_threshold, n_iterations):
         self.regions = regions
         self.prob_flood = prob_flood 
-        self.prob_act = prob_act
+        self.init_prob_act = init_prob_act
         self.influence_threshold = influence_threshold
         self.n_iterations = n_iterations
         self.action = []
         # 0 if no action, 1 if action
-        self.damaged = []
+        self.damaged = []#can maybe GO
         # 0 if not damaged, 1 if damaged
         self.initial_noact = []
-        self.count = 0
+        self.hits = []
 
     def populate(self):
         #want action and damaged to be a vector of length number of regions
         #then want each element of damaged to equal zero, for now
         self.damaged = [0 for x in range(self.regions)]
         self.action = [0 for x in range(self.regions)]
+        self.prob_act = [self.init_prob_act for x in range(self.regions)]
+        self.hits =  [0 for x in range(self.regions)]
         #then we will see who wants to act (assuming in this version that they all should if behaving rationa
         print 'initial:'
         self.plot_eile()    
@@ -42,26 +43,39 @@ class adaptretreat:
         return float(sum(self.damaged)) / self.initial_noact > self.influence_threshold
 
 
+    def update_flood_perception(self,iter):
+        for i in range(self.regions):
+            if self.action[i] == 0:
+                self.prob_alpha[i] = self.alpha * (self.hits[i]/iter) + ((1-self.alpha)*(sum hits.exclude_i)/some_proper_track_of_potentials)
+            else:
+                self.prob_alpha[i] = 1 # would be computationally better not to do it this way, but want to get it working for now
+            print 'prob_alpha ', self.prob_alpha
+
+    def update_prob_act(self):
+        for i in range(self.regions):
+            self.prob_act[i] = self.prob_act[i] * (self.prob_alpha[i]/self.prob_flood)
+            
     def is_damaged(self):
         for i in range(self.regions):
             if self.action[i] == 0:
                 if random.random() < self.prob_flood:
                     self.damaged[i] = 1
-                    self.count = self.count + 1
+                    self.hits[i] = self.hits[i] + 1
 
     def decide_action(self):
             for i in range(self.regions):
                 if self.action[i] == 0:
-                    if random.random() < self.prob_act:
+                    if random.random() < self.prob_act[i]:
                         self.action[i] = 1         
 
     def update(self):
         print 'after observation:'
         for iter in range(self.n_iterations):
             self.is_damaged()
-            #self.decide_action()
-            if self.is_worried():
-                self.decide_action()
+            self.update_flood_perception(iter)
+            self.update_prob_act()
+            self.decide_action()
+            #if self.is_worried():
             self.plot_eile()  
             if sum(self.action) == self.regions:
                 break
