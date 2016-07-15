@@ -91,7 +91,7 @@ class adaptretreat:
 
 
 #parameters:(number of regions, prob flood, prob action, number of iterations)
-#ar_1 = adaptretreat(10,.2,.5,.5,500)
+#ar_1 = adaptretreat(10,.2,.5,500)
 arg=sys.argv
 ar_1 = adaptretreat(int(float(arg[1])),float(arg[2]),float(arg[3]),500)
 print arg
