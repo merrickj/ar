@@ -4,6 +4,8 @@
 # James Merrick, July 13th 2016
 # Updated structure following discussion with Melanie Craxton
 
+# REMEMBER - GIT STRUCTURE IN PLACE!
+
 import random
 import sys
 
@@ -16,7 +18,7 @@ class adaptretreat:
         self.action = [] # 0 if no action, 1 if action
         self.hits = []   # Number of times flooded
         self.potential = 0 # Number of potential flooding events
-        self.alpha = 2*(float(1)/self.regions)
+        self.alpha = min(1,10*(float(1)/self.regions)) # how much weight your own region relative to neighbours
         self.prob_alpha = []
         self.transition = [0 for x in range(self.regions)]
 
@@ -48,7 +50,9 @@ class adaptretreat:
     def update_prob_act(self):
         for i in range(self.regions):
             #Bayes rule  P(A|B)=P(B|A)P(A)/P(B)
-            self.prob_act[i] = self.init_prob_act * (float(self.prob_alpha[i])/self.prob_flood)
+            #self.prob_act[i] = self.init_prob_act * (float(self.prob_alpha[i])/self.prob_flood)
+            # this would be an alternate
+            self.prob_act[i] = max(self.init_prob_act, self.prob_act[i]*(float(self.prob_alpha[i])/self.prob_flood))
 
     def is_damaged(self):
         self.potential = self.potential + (self.regions-sum(self.action))
@@ -85,8 +89,9 @@ class adaptretreat:
                 print agent_colors[self.action[i]],
                 if (self.action[i] == 1) and (self.transition[i] != 1):
                     roundedlist[i] = '-'
-        print '\t',roundedlist,
+        print '\t',roundedlist,self.hits,self.prob_alpha
         print ''
+        print 'self.alpha',self.alpha
 
 
 
