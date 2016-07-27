@@ -51,7 +51,7 @@ class adaptretreat:
         for i in range(self.regions):
             #Bayes rule  P(A|B)=P(B|A)P(A)/P(B)
             #self.prob_act[i] = self.init_prob_act * (float(self.prob_alpha[i])/self.prob_flood)
-            # this would be an alternate
+            # this would be an alternate - one-sided path dependence
             self.prob_act[i] = max(self.init_prob_act, self.prob_act[i]*(float(self.prob_alpha[i])/self.prob_flood))
 
     def is_damaged(self):
@@ -79,6 +79,9 @@ class adaptretreat:
             self.plot_eile()  
             if sum(self.action) == self.regions:
                 print 'ends at observation ',iter
+                print 'alpha this run: ', self.alpha
+                print 'total number of floods due to no action', sum(self.hits)
+                print 'number of floods due to no action by region', (self.hits)
                 break
 
 
@@ -89,9 +92,9 @@ class adaptretreat:
                 print agent_colors[self.action[i]],
                 if (self.action[i] == 1) and (self.transition[i] != 1):
                     roundedlist[i] = '-'
-        print '\t',roundedlist,self.hits,self.prob_alpha
+        print '\t',roundedlist
         print ''
-        print 'self.alpha',self.alpha
+
 
 
 
