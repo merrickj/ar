@@ -3,11 +3,16 @@
 
 # James Merrick, July 13th 2016
 # Updated structure following discussion with Melanie Craxton
+# James Merrick, October 21 2016
+# Reform probability structure to take account of Delavane's info
+# main change is that flooding is now no longer a simple probability but a probabilistic damage function
+
 
 # REMEMBER - GIT STRUCTURE IN PLACE!
 
 import random
 import sys
+from scipy.stats import genextreme
 
 class adaptretreat:
     def __init__(self, regions, prob_flood, init_prob_act, n_iterations):
@@ -35,31 +40,10 @@ class adaptretreat:
         self.plot_eile()    
 
 
-    def update_flood_perception(self,iter):
-        if (self.potential-(iter+1)) == 0:
-            denominator = 1
-        else:
-            denominator = self.potential - (iter+1);
-        for i in range(self.regions):
-            if self.action[i] == 0:
-                self.prob_alpha[i] = self.alpha * (float(self.hits[i])/(iter+1)) + (1-self.alpha)*(float(sum(self.hits)-self.hits[i]) / denominator)
-            else:
-                self.prob_alpha[i] = self.prob_flood # would be computationally better not to do it this way, but want to get it working for now
-
-
     def update_prob_act(self):
+        self.calculate_damage()
         for i in range(self.regions):
-            #Bayes rule  P(A|B)=P(B|A)P(A)/P(B)
-            #self.prob_act[i] = self.init_prob_act * (float(self.prob_alpha[i])/self.prob_flood)
-            # this would be an alternate - one-sided path dependence
-            self.prob_act[i] = max(self.init_prob_act, self.prob_act[i]*(float(self.prob_alpha[i])/self.prob_flood))
-
-    def is_damaged(self):
-        self.potential = self.potential + (self.regions-sum(self.action))
-        for i in range(self.regions):
-            if self.action[i] == 0:
-                if random.random() < self.prob_flood:
-                    self.hits[i] = self.hits[i] + 1
+            self.prob_act[i] = max(self.init_prob_act,min(1,(self.actual_damage[i]/self.expected_damage[i]))) #for now just assume we only care about our own region
 
     def decide_action(self):
             for i in range(self.regions):
@@ -67,6 +51,17 @@ class adaptretreat:
                     if random.random() < self.prob_act[i]:
                         self.action[i] = 1      
                         self.transition[i] = 1
+
+    def calculate_damage(self):
+        for i in range(self.regions):
+            s=flood_rv(i)
+            actual_damage[i]=damage(s,i)
+
+    def flood_rv(region):
+        return genextreme.rvs(c(region),loc(region),scale(region))
+
+    def damage(s,region):
+        #either delavane function calculated from bottom up (more work) or something simpler that I have not worked out yet
                                                                         
     def update(self):
         print 'after observation:\t P(act)'
