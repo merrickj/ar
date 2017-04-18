@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 a=[]
 p=[]
 s=[]
@@ -158,7 +160,8 @@ for i in range(0,29):
     flood = flood_gev(rgn)
     ans_c,err_c = quad(integrand,0,flood)
 #print 'test integral, err_c', ans_c, err_c 
-    print 'damage to region, ',n[rgn],' from flood level ',flood,' is ', ans_c 
+#    print 'damage to region, ',n[rgn],' from flood level ',flood,' is ', ans_c, 'M$'
+    print 'damage to region %s\t\t from flood level %.2fm\t is %.2f million $' %(n[rgn],flood,ans_c)
 #    print a[rgn]
 #    print s[rgn]
 #    print p[rgn]
