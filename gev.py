@@ -99,17 +99,17 @@ x=.0923
 #to integrate the function x**2 between 0 and 1
 from scipy.integrate import quad
 
-def integrand(x):
-    return x**2
+#def integrand(x):
+#    return x**2
 
-ans,err = quad(integrand,0,1)
+#ans,err = quad(integrand,0,1)
 #print 'test integral ', ans
 
 #,seg,segid,s1,s10,s100,s1000,smax,longi,lati,slopecst,uplift,area1,area2,area3,area4,area5,area6,area7,area8,area9,area10,area11,area12,area13,area14,area15,area16,length,h0,pop,popdens,wetland,iso,countrylongname,FUNDregion,ypc_scale,cci,gtapland
 
 #56.674,3.96,28351,110.547,0,IRL,Ireland,WEU,1,1.289,0.619785455
 
-a_cooley=[64,6,2,3,1,5.333333333,5.333333333,5.333333333,3,3,3,3,3.25,3.25,3.25,3.25];
+#a_cooley=[64,6,2,3,1,5.333333333,5.333333333,5.333333333,3,3,3,3,3.25,3.25,3.25,3.25];
 #print a_cooley[15]
 
 #what happened area15?
@@ -117,19 +117,16 @@ def area(y,a_):
     a=[]
     for i in range(0,15):
         temp=float(a_[i])
-#        print temp
         a.append(temp)
-#        print float(a_[i])*2
-#        a[i]=float(a_[i])
-#        print a[i]
+
     return a[0]*max(0,min(0.5,y))+(a[1]+a[0])/2*max(0,min(1,y-0.5))+a[1]*max(0,min(0.5,y-1.5))+a[2]*max(0,min(1,y-2))+a[3]*max(0,min(1,y-3))+a[4]*max(0,min(1,y-4))+a[5]*max(0,min(1,y-5))+a[6]*max(0,min(1,y-6))+a[7]*max(0,min(1,y-7))+a[8]*max(0,min(1,y-8))+a[9]*max(0,min(1,y-9))+a[10]*max(0,min(1,y-10))+a[11]*max(0,min(1,y-11))+a[12]*max(0,min(1,y-12))+a[13]*max(0,min(1,y-13))+a[14]*max(0,y-14)
 
 #print 'cooley area flooded', area(flood,a_cooley)
 
 
-sigma_k_cooley = 14.43628151582;
-vsl = 9.444821238556;
-rho = 0.518144214230081;
+#sigma_k_cooley = 14.43628151582;
+#vsl = 9.444821238556;
+#rho = 0.518144214230081;
 
 
 
@@ -161,7 +158,7 @@ for i in range(0,29):
     ans_c,err_c = quad(integrand,0,flood)
 #print 'test integral, err_c', ans_c, err_c 
 #    print 'damage to region, ',n[rgn],' from flood level ',flood,' is ', ans_c, 'M$'
-    print 'damage to region %s\t\t from flood level %.2fm\t is %.2f million $' %(n[rgn],flood,ans_c)
+    print 'damage to region %s from flood level %.2fm is %.2f million $' %(n[rgn],flood,ans_c)
 #    print a[rgn]
 #    print s[rgn]
 #    print p[rgn]
