@@ -1,3 +1,42 @@
+a=[]
+p=[]
+s=[]
+k=[]
+fg=[]
+n=[]
+import csv
+with open('ireland_input.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        a.append(row)
+
+with open('ireland_popdens.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        p.append(row)
+
+
+with open('ireland_seg.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        s.append(row)
+
+with open('ireland_cap_1.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        k.append(row)
+
+with open('flood_gev.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        fg.append(row)
+
+with open('ainmneacha.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        n.append(row)
+
+
 from scipy.stats import genextreme
 #c=-.5
 #loc=1
@@ -27,15 +66,21 @@ from scipy.stats import genextreme
 #Ireland8502 0.06265796 0.03573306 0.2064354 
 #Ireland8515 0.06157673 0.03526684 0.2098331
 
-xi=0.2098331
-sigma=0.03526684
-mu=0.06157673
+#xi=0.2098331
+#sigma=0.03526684
+#mu=0.06157673
 
-c = -xi
-loc = mu
-scale = sigma
+#c = -xi
+#loc = mu
+#scale = sigma
 
-flood=genextreme.rvs(c,loc,scale)/sigma
+def flood_gev(r):
+    c = -float(fg[r][2])
+    loc = float(fg[r][0])
+    scale = float(fg[r][1])
+    return genextreme.rvs(c,loc,scale)/scale
+
+#flood=genextreme.rvs(c,loc,scale)/sigma
 #print 'Ireland8515 flood level (m):'
 #print 'actual ',genextreme.rvs(c,loc,scale),'mean:', genextreme.stats(c,loc,scale,moments='m')
 #print 'actual alt', flood , 'mean alt:', ((genextreme.stats(c,moments='m')*sigma) + mu)/sigma
@@ -43,8 +88,8 @@ flood=genextreme.rvs(c,loc,scale)/sigma
 #see note above about dividing by sigma here
 import math
 x=.0923
-gpdf = ((1+(x-mu)/sigma*xi)**(-1/xi))**(xi+1)*math.exp(-1*(1+(x-mu)/sigma*xi)**(-1/xi))/sigma
-gcdf = math.exp(-1*(1+(x-mu)/sigma*xi)**(-1/xi))
+#gpdf = ((1+(x-mu)/sigma*xi)**(-1/xi))**(xi+1)*math.exp(-1*(1+(x-mu)/sigma*xi)**(-1/xi))/sigma
+#gcdf = math.exp(-1*(1+(x-mu)/sigma*xi)**(-1/xi))
 #print 'gpdf: ',gpdf, 'gcdf: ',gcdf
 
 
@@ -66,7 +111,15 @@ a_cooley=[64,6,2,3,1,5.333333333,5.333333333,5.333333333,3,3,3,3,3.25,3.25,3.25,
 #print a_cooley[15]
 
 #what happened area15?
-def area(y,a):
+def area(y,a_):
+    a=[]
+    for i in range(0,15):
+        temp=float(a_[i])
+#        print temp
+        a.append(temp)
+#        print float(a_[i])*2
+#        a[i]=float(a_[i])
+#        print a[i]
     return a[0]*max(0,min(0.5,y))+(a[1]+a[0])/2*max(0,min(1,y-0.5))+a[1]*max(0,min(0.5,y-1.5))+a[2]*max(0,min(1,y-2))+a[3]*max(0,min(1,y-3))+a[4]*max(0,min(1,y-4))+a[5]*max(0,min(1,y-5))+a[6]*max(0,min(1,y-6))+a[7]*max(0,min(1,y-7))+a[8]*max(0,min(1,y-8))+a[9]*max(0,min(1,y-9))+a[10]*max(0,min(1,y-10))+a[11]*max(0,min(1,y-11))+a[12]*max(0,min(1,y-12))+a[13]*max(0,min(1,y-13))+a[14]*max(0,y-14)
 
 #print 'cooley area flooded', area(flood,a_cooley)
@@ -81,22 +134,43 @@ rho = 0.518144214230081;
 def psi(e):
     return e/(1+e);
 
-def damage(e):
-    sigma_k_cooley = 14.43628151582;
+def damage(e,r):
+    sigma_k = float(k[r][0]);
     vsl = 9.444821238556;
     mu = 0.01;
-    sigma_l_cooley = 110.547;
+    sigma_l = float(p[r][0]);
     rho = 0.518144214230081;
-    a_cooley=[64,6,2,3,1,5.333333333,5.333333333,5.333333333,3,3,3,3,3.25,3.25,3.25,3.25];
-    return (1-rho)*area(e,a_cooley)*(sigma_k_cooley*psi(e)+sigma_l_cooley*vsl*mu)
+    a_ = a[r];
+    return (1-rho)*area(e,a_)*(sigma_k*psi(e)+sigma_l*vsl*mu)
+
 
 
 #print 'damage_snap', damage(flood)
 
-def integrand_cooley(e):
+def integrand(e):
+    r=rgn
+    return damage(e,r)
 
-    return damage(e)
-
-ans_c,err_c = quad(integrand_cooley,0,flood)
+global rgn
+#for i in range(0,28):
+for i in range(0,29):
+    rgn=i
+    flood = flood_gev(rgn)
+    ans_c,err_c = quad(integrand,0,flood)
 #print 'test integral, err_c', ans_c, err_c 
-print 'damage to cooley from flood level ',flood,' is ', ans_c 
+    print 'damage to region, ',n[rgn],' from flood level ',flood,' is ', ans_c 
+#    print a[rgn]
+#    print s[rgn]
+#    print p[rgn]
+#    print k[rgn]
+
+
+
+
+
+
+
+
+
+
+
