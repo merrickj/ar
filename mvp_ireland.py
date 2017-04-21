@@ -58,7 +58,7 @@ class adaptretreat:
         for i in range(self.regions):
             s=self.flood_mean(i)
             self.expected_damage[i],err_temp = quad(self.damage,0,s,i)
-            print self.expected_damage[i],'expected damage'
+#            print self.expected_damage[i],'expected damage'
 
     def flood_mean(self,region):
         c = -float(fg[region][2])
@@ -77,7 +77,6 @@ class adaptretreat:
         #either delavane function calculated from bottom up (more work) or something simpler that I have not worked out yet
         sigma_k = float(k[region][0]);
         sigma_l = float(p[region][0]);
-#        print a[region],'yo'
         a_ = a[region];
         return (1-rho)*self.area(e,a_)*(sigma_k*self.psi(e)+sigma_l*vsl*mu)
 
@@ -104,6 +103,8 @@ class adaptretreat:
                 break
         rounded_total_damage=[round(x,0) for x in self.total_damage]
         print 'Total damage:', rounded_total_damage
+        for i in range(self.regions):
+            print 'cost in %s is %.0f million $' %(n[i],rounded_total_damage[i])
 
 
     def plot_eile(self):
