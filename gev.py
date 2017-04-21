@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 a=[]
 p=[]
 s=[]
@@ -80,7 +78,10 @@ def flood_gev(r):
     c = -float(fg[r][2])
     loc = float(fg[r][0])
     scale = float(fg[r][1])
-    return genextreme.rvs(c,loc,scale)/scale
+    out = []
+    out.append(genextreme.rvs(c,loc,scale)/scale)
+    out.append(genextreme.stats(c,loc,scale,moments='m')/scale)
+    return out
 
 #flood=genextreme.rvs(c,loc,scale)/sigma
 #print 'Ireland8515 flood level (m):'
@@ -146,25 +147,35 @@ def damage(e,r):
 
 #print 'damage_snap', damage(flood)
 
-def integrand(e):
-    r=rgn
+def integrand(e,r):
+#    r=rgn
     return damage(e,r)
 
-global rgn
+#global rgn
 #for i in range(0,28):
 for i in range(0,29):
-    rgn=i
-    flood = flood_gev(rgn)
-    ans_c,err_c = quad(integrand,0,flood)
+#    rgn=i
+    floodl = flood_gev(i)
+    flood = float(floodl[0])
+    meanflood = float(floodl[1])
+    ans_c,err_c = quad(integrand,0,flood,i)
+
 #print 'test integral, err_c', ans_c, err_c 
 #    print 'damage to region, ',n[rgn],' from flood level ',flood,' is ', ans_c, 'M$'
-    print 'damage to region %s from flood level %.2fm is %.2f million $' %(n[rgn],flood,ans_c)
+    print 'damage to region %s from flood level %.2fm is %.2f million $' %(n[i],flood,ans_c)
+
 #    print a[rgn]
 #    print s[rgn]
 #    print p[rgn]
 #    print k[rgn]
 
-
+for i in range(0,29):
+#    rgn=i
+    floodl = flood_gev(i)
+    meanflood = float(floodl[1])
+#    print meanflood
+    ans_m,err_m = quad(integrand,0,meanflood,i)
+    print 'mean damage to region %s from mean flood level %.2fm is %.2f million $' %(n[i],meanflood,ans_m)
 
 
 
