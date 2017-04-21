@@ -121,7 +121,7 @@ class adaptretreat:
 
 
 
-#parameters:(number of regions, prob action, number of iterations)
+#parameters:(prob action, number of iterations)
 #ar_1 = adaptretreat(10,.2,.5,500)
 arg=sys.argv
 ar_1 = adaptretreat(float(arg[1]),500)
@@ -129,9 +129,7 @@ print arg
 ar_1.populate()
 ar_1.update()
 print '[0 = no action, 1 = action]'
-#jam = quad(integrand,0,2.58)# note does not quite work yet!
-#print a
-#print 'psi' gev.psi(10)
+
 
 
 
