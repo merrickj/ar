@@ -179,6 +179,32 @@ for i in range(0,29):
 
 
 
+# now we want to plot g(s) in our notation
+# say region 1, Iorras
+r_temp = 1
+c_temp = -float(fg[r_temp][2])
+loc_temp = float(fg[r_temp][0])
+scale_temp = float(fg[r_temp][1])
+
+import numpy as np
+xxa=np.arange(15)
+yya=np.arange(15)
+for xx in range(0,15,1):
+    yy = genextreme.pdf(xx*scale_temp,c_temp,loc_temp,scale_temp) * damage(xx,r_temp)
+    xxa[xx]=xx
+    yya[xx]=yy
+    print xx,yy
+
+
+
+print xxa
+print yya
+import matplotlib.pyplot as plt
+plt.scatter(xxa,yya)
+plt.plot(xxa,yya)
+plt.show()
+    
+
 
 
 
