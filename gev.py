@@ -132,6 +132,7 @@ def area(y,a_):
 
 
 def psi(e):
+    e = e/1.0
     return e/(1+e);
 
 def damage(e,r):
