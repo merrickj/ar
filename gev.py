@@ -234,11 +234,11 @@ plt.ylabel("millions of $")
 plt.xlim(-.1,1.1)
 
 # uncomment to show plot
-#plt.show()
+plt.show()
 
 # uncomment to save plot
-name = 'fig/'+str(n[r_temp])+'.png'
-plt.savefig(name)
+#name = 'fig/'+str(n[r_temp])+'.png'
+#plt.savefig(name)
     
 
 
