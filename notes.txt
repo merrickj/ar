@@ -1,0 +1,63 @@
+October 2016
+*summer model is working well.
+
+Introducing Delavane's work - instead of a probability of flooding, i.e. .4 chance of a hit, we now have a probability distribution, where there is a continuious probability of increasing damage. Small probability of very small damage, small probability of huge damage, etc.. I think this repeats every given year
+
+so now, a reformulation. chance of acting increases as cost goes up. seems like would need cost of action too to work this out..
+Could be anchored by expected damage. Or if prob acting is 0.9, anchor would be .9D - then adjust probability of acting by how actual damages compare
+
+calculating damage(s) might be tricky, rather than a lookup table, looks like will have to calculate it explicitly
+
+
+Have placeholder in place that almost does everything except calculate damage(s) properly
+
+Looks like calibration will be important. What is probability of acting, and how does that update with flooding
+
+
+* now have the model producing flood levels for Ireland. The region considered, S is low, typically around 0.1m (assuming am getting everything right)
+IF DIVIDE BY SIGMA, which Delavane seems to be doing from equation, but not from code, this rises to 2.5m, big difference!
+
+Converting this to damages - do we have all the info -such as VSL for example? VSL and stuff is in GAMS file. calculating damages with a particular surge event seems a little tricky - a lot of integration required..
+
+From reading  Delavane's pdf, I think for first implementation we will do integration from lslr to lslr+s, so just need to pull in data somehow. Lets record it here:
+(for each region)
+lslr: 
+area(e): I think we have to assume area1 is area(1)
+rho:
+sigma_k:
+phi:
+h: (function)
+sigma_l:
+mu:
+VSL:
+
+* note that Delavane calculates area and h(e) in the R file, and then
+  the capital and VSL stuff, and Rho in the CIAM gams file. will have
+  to think about the mathematics of that a little..
+  -- so more or less the case that the parameters associated with R
+  file are in CIAMinput.csv, and those associated with gams file are
+  in data/CIAMDATA.gdx where I have the CIAM files, which is in the proposals section of my Stanford file
+* might have to gather the relevant parameters for Python into some common datastructure Python understands, or get Python to call stuff. If integral hard in python, it could maybe call R, and then replicate GAMS. Either way, it will be a fair bit of work to make this happen
+
+-- first step, do it for Ireland. Just do the IRish regions and how I get on
+
+*note that s1 and s100 levels for Ireland in CIAMinput.csv is 3.036,3.376 indicating what is the correct random draw from s
+
+
+
+- Note that in the CIAM model, the expected damage is calculated through a logistic function! This function seems to fit the function to the ou
+
+from solvefixed.gms:
+***************************** SIGMA *****************************
+* SIGMA gives EV of effective exposure area (sq km) for an overtopping surge (after accounting for flood depth damage function but before resilience (rho) of capital and people)
+SIGMA(seg,t,retreatGrid)$xtat(t,at)=data(seg,'rsig0')/( 1+data(seg,'rsigA')*exp(data(seg,'rsigB')*pos(R(seg,at,retreatGrid)-lslr(t,seg))) );
+SIGMA(seg,t,protectGrid)$xtat(t,at)=(data(seg,'psig0')+data(seg,'psig0coef')*pos(lslr(t,seg)))/( 1+data(seg,'psigA')*exp(data(seg,'psigB')*pos(H(seg,at,protectGrid)-lslr(t,seg))) );
+
+* Think of storm cost as the fair cost of insurance -- tstep times the annual expected damage
+* Capital losses in expected flooded area (10 years at resilience * $M/sqkm per year * expected sqkm
+Costs(solved,seg,t,'stormCapital') = tstept*(1-segment(rho(t,country)))*capital(t,seg)*SIGMA(seg,t,solved);
+* Population losses in expected flooded area (10 years at resilience * ppl/sqkm * $M/ppl per year * 0.01 * expected sqkm
+Costs(solved,seg,t,'stormPopulation') = tstept*(1-segment(rho(t,country)))*popdens(t,seg)*vsl(t,seg)*floodmortality*SIGMA(seg,t,solved);
+
+
+** a problem - are the floods independent? actually seems unlikely as I think about it..
