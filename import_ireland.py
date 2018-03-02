@@ -5,6 +5,7 @@ k=[]
 fg=[]
 n=[]
 rcp=[]
+scal=[]
 
 
 import csv
@@ -46,6 +47,11 @@ with open('rcp_ie.csv', 'rb') as f:
     for row in reader:
         rcp.append(row)
 
+with open('ireland_scalars.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        scal.append(row)
+        
 
 def integrand(e,region):
     sigma_k = float(k[region][0]);

@@ -5,7 +5,7 @@ k=[]
 fg=[]
 n=[]
 rcp=[]
-
+scal=[]
 
 import csv
 with open('ireland_input.csv', 'rb') as f:
@@ -46,7 +46,13 @@ with open('rcp_ie.csv', 'rb') as f:
     for row in reader:
         rcp.append(row)
 
+with open('ireland_scalars.csv', 'rb') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        scal.append(row)
 
+
+        
 from scipy.stats import genextreme
 
 #Note c is negative of Delavane's xi parameter
@@ -128,7 +134,7 @@ def g(s,lb,r):
     c_temp = -float(fg[r][2])
     loc_temp = float(fg[r][0])
     scale_temp = float(fg[r][1])
-    return genextreme.pdf(s,c_temp,loc_temp,scale_temp) * damage(lb,s+lb,r)
+    return genextreme.pdf(s,c_temp,loc_temp,scale_temp) * damage(0,s+lb,r)
 
 def g_eile(s,r):
     c_temp = -float(fg[r][2])
@@ -136,7 +142,7 @@ def g_eile(s,r):
     scale_temp = float(fg[r][1])
 #    lb = lb_temp
     lb = float(rcp[r_temp][0])    
-    return genextreme.pdf(s,c_temp,loc_temp,scale_temp) * damage(lb,s+lb,r)
+    return genextreme.pdf(s,c_temp,loc_temp,scale_temp) * damage(0,s+lb,r)
 
 
 def expected_damage(lb,r):
@@ -161,7 +167,36 @@ def cost(r,h):
 def dcost(r,h):
     pc = 7.7598    
     return pc*float(length(r))*2*h
-    
+# this can be modified to inclue some additional terms mentioned by nn
+
+def retreatcost(r,h):
+    a_ = a[r]
+    sigma_k = float(k[r][0]);
+
+    movefactor = float(scal[0][0])
+    capmovefactor = float(scal[1][0])
+    mobcapfrac = float(scal[2][0])
+    democost = float(scal[3][0])
+
+    return area(h,a_) * (movefactor*(sigma_k/3.0) + capmovefactor * mobcapfrac*sigma_k + democost*(1-mobcapfrac)*sigma_k)
+
+#Parameter ireland_scalars(*) /
+#'movefactor' 1, 
+#'capmovefactor' 0.1, 
+#'mobcapfrac' 0.25, 
+#'democost' 0.05 /;
+
+
+def inundcost(r,h,depr):
+    a_ = a[r]
+    sigma_k = float(k[r][0]);
+    #if planned, inundation costs are less (assume capital is depreciated when the flood comes. If not planned, greater hit
+    #depr = 1
+    # shortcut - note that value pretty constant for Ireland, Delavane converts it to land rent when done yearly (divide by 25)
+    lv = 5.376
+    return  lv * area(h,a_) + (1-depr) * sigma_k * area(h,a_)
+# note page 13 of Delavane allows for action in previous period etc.
+
 
 
 for i in range(0,29):
@@ -226,8 +261,12 @@ for xx in range(0,20,1):
 
 from scipy.optimize import fsolve
 s_inter = fsolve(f,meanflood*3)
-
-
+#note that the actual amount built should be s_inter+lslr (same as dcost calculated) [that is, graph shows
+# ok, this can be basis..
+print 'retreat cost would be',retreatcost(r_temp,2+lb_temp)
+print 'inundation cost would be with depreciation',inundcost(r_temp,2+lb_temp,1)
+print 'inundation cost would be with no depreciation',inundcost(r_temp,2+lb_temp,0)
+print 'wall cost would be',cost(r_temp,s_inter+lb_temp)
 print 'intersection s is',s_inter
 
 print 'expected damages', expected_damage(lb_temp,r_temp)
@@ -262,3 +301,7 @@ sys.exit()
 
 
 
+#from solvefixed.gms:
+#Costs(retreatGrid,seg,t,'relocation')$xtat(t,at) = [tstept/tstep(at)]*sum(xtat(t,at), pos([coastareaA(R,at,seg,retreatGrid)] - [coastareaA(R,at-1,seg,retreatGrid)]) * [movefactor*ypc(at,seg)*1e-6*popdens(at,seg) + capmovefactor*mobcapfrac*capital(at,seg) + democost*(1-mobcapfrac)*capital(at,seg)]);
+
+#note ypc*1e-6*popdens = capital / 3

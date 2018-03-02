@@ -29,25 +29,33 @@ class adaptretreat:
         self.n_iterations = n_iterations
         self.action = [] # height of wall built?
         self.meanflood=[]
-        self.lb=[]
+        self.slr=[]
         self.expected_damage=[]
         self.true_expect=[]
         self.actual_damage=[]
-        self.alpha = min(1,10*(float(1)/self.regions)) # how much weight your own region relative to neighbours
+        self.retreat=[]
+        self.retreatcost=[]
+        self.protectcost=[]
+        self.noadaptcost=[]        
 
     def populate(self):
         self.action = [0 for x in range(self.regions)]
         self.actual_damage = [0 for x in range(self.regions)]
         self.meanflood = [0 for x in range(self.regions)]
-        self.lb = [0 for x in range(self.regions)]        
+        self.slr = [0 for x in range(self.regions)]        
         for i in range(self.regions):
-            self.lb[i] = slr(i)
+            self.slr[i] = slr(i)
+        self.retreat = [0 for x in range(self.regions)]
+        self.retreatcost = [0 for x in range(self.regions)]        
+        self.calculate_retreatcost()
         self.flood_mean()
         self.expected_damage = [0 for x in range(self.regions)]
         self.true_expect = [0 for x in range(self.regions)]                
         self.truee()
         self.total_damage = [0 for x in range(self.regions)]
-        self.beta = [self.init_beta for x in range(self.regions)]        
+        self.beta = [self.init_beta for x in range(self.regions)]
+        self.protectcost = [0 for x in range(self.regions)]
+        self.noadaptcost = [0 for x in range(self.regions)]                
 
 
     def update_beta(self):
@@ -56,9 +64,9 @@ class adaptretreat:
                 self.beta[i] = self.beta[i] * (self.actual_damage[i] / self.expected_damage[i])
             # a hack of an update rule for now
 
-    def update_lb(self):
-        for i in range(self.regions):
-            self.lb[i] = slr(i) + self.action[i] 
+#    def update_lb(self):
+#        for i in range(self.regions):
+#            self.slr[i] = slr(i) + self.action[i] 
 
     def fn(self,s,r):
         return (self.beta[r]*self.g(s,r)) - self.dcost(r,s)
@@ -69,12 +77,28 @@ class adaptretreat:
             s_inter = fsolve(self.fn,initial,i)
             if s_inter > 0:
                 self.action[i] = self.action[i] + s_inter[0]
+                self.protectcost[i] = self.cost(i,s_inter)
+                localcost = self.protectcost[i]
+            else:
+                c = -float(fg[i][2])
+                loc = float(fg[i][0])
+                scale = float(fg[i][1])
+                self.noadaptcost[i] = self.calculate_inundation_cost(i,self.slr[i] + genextreme.ppf(.99,c,loc,scale),0)
+                localcost = self.noadaptcost[i]
+            if self.retreatcost[i] < localcost:
+                self.retreat[i] = 1
 
 
-    def dcost(self,r,s):
-        h = s+self.lb[r]
+
+    def dcost(self,r,e):
+        h = e+self.slr[r]
         pc = 7.7598    
         return pc*float(length(r))*2*h
+
+    def cost(self,r,e):
+        h = e+self.slr[r]
+        pc = 7.7598
+        return pc*float(length(r))*h*h        
     
     def g(self,s,r):
         c_temp = -float(fg[r][2])
@@ -85,12 +109,45 @@ class adaptretreat:
                     
     def damage(self,e,r):
         if (e - self.action[r]) > 0:
-            out = quad(integrand,self.lb[r],e+self.lb[r]-self.action[r],r)
+            out = quad(integrand,0,e+self.slr[r],r)
             return out[0]
         else:
             return 0
 
+    def calculate_retreatcost(self):
+        for i in range(self.regions):
+            a_ = a[i]
+            sigma_k = float(k[i][0]);
 
+            movefactor = float(scal[0][0])
+            capmovefactor = float(scal[1][0])
+            mobcapfrac = float(scal[2][0])
+            democost = float(scal[3][0])
+
+            depr = 1
+
+            c = -float(fg[i][2])
+            loc = float(fg[i][0])
+            scale = float(fg[i][1])
+
+            h = self.slr[i] + genextreme.ppf(.99,c,loc,scale)
+
+            plannedicost = self.calculate_inundation_cost(i,h,depr)
+            # retreat cost comprises the actual cost of moving and the cost of inundation of land (assume it is planned and orderly so it is only the land value lost while the capital on the land itself is depreciated
+            self.retreatcost[i] = area(h,a_) * (movefactor*(sigma_k/3.0) + capmovefactor * mobcapfrac*sigma_k + democost*(1-mobcapfrac)*sigma_k)
+            self.retreatcost[i] = self.retreatcost[i] + plannedicost
+
+
+    def calculate_inundation_cost(self,i,h,depr):
+        lv = 5.376
+        a_ = a[i]
+        sigma_k = float(k[i][0]);
+
+        return lv * area(h,a_) + (1-depr) * sigma_k * area(h,a_)
+
+
+
+            
     def calculate_actual_damage(self):
         for i in range(self.regions):
             s=flood_rv(i)
@@ -135,19 +192,34 @@ class adaptretreat:
             self.calculate_actual_damage()
             self.calculate_expected_damage()
             self.update_beta()
-            self.update_lb()
+            #self.update_lb()
 #            print map(lambda x: "{:.2f}".format(self.beta), dataList)
 #                        print 'self.beta: %.2f' % self.beta
 #            temp = [ '%.2f' % elem for elem in self.beta ]
             temp = [ round(elem,2) for elem in self.beta ]
-            print 'self.beta:',temp
-            print 'self.action', self.action
-
+            print 'beta:',temp
+            print 'wall build', self.action
+            print 'retreat', self.retreat
+            for i in range(self.regions):
+                print n[i],':'
+                if self.protectcost[i]>0:
+                    print '\t\t\t\t wall cost: %.2f' %(self.protectcost[i])
+                else:
+                    print '\t\t\t\t wall cost: too expensive'                    
+                    print '\t\t\t\t no-adapt cost: %.2f' %(self.noadaptcost[i])
+                print '\t\t\t\t retreat cost: %.2f' %(self.retreatcost[i])
+                if self.retreat[i]>0:
+                    print '\t\t\t\t Decision: Retreat'
+                else:
+                    if self.protectcost[i]>0:
+                        print '\t\t\t\t Decision: Build wall'
+                    else:
+                        print '\t\t\t\t Decision: chance on'
 
 
 #parameters:(beta, number of iterations)
 arg=sys.argv
-ar_1 = adaptretreat(float(arg[1]),5)
+ar_1 = adaptretreat(float(arg[1]),1)
 print arg
 ar_1.populate()
 ar_1.update()
