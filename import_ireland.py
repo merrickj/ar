@@ -42,7 +42,8 @@ with open('ainmneacha.csv', 'rb') as f:
     for row in reader:
         n.append(row)
 
-with open('rcp_ie.csv', 'rb') as f:
+# will go with 45 for now
+with open('rcp45.csv', 'rb') as f:
     reader = csv.reader(f)
     for row in reader:
         rcp.append(row)
@@ -85,5 +86,5 @@ def flood_rv(region):
 #        return genextreme.rvs(c(region),loc(region),scale(region))
 
 
-def slr(region):
-    return float(rcp[region][2])
+def slr(region,time):
+    return float(rcp[region][time])
