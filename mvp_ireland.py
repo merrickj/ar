@@ -5,9 +5,12 @@
 # At first period, can decide to retreat, or abandon (would only make sense if retreat costs less than savings on depreciation)
 # then if decide to build wall, you play this game of deciding whether to build more or not as more floods come in
 
-# (next to sort out) just make sure working in general. not sure now, due to jumpy behaviour of building add-ons to wall. is it modelled right?
-# check slr() around the place that not strange
-
+#todo
+# my last printout seems to be showing overbuilding a lot
+# there are negative values coming out for the counterfactual case at end
+# should comparison with retreat cost include expected damages from overtopping flooding too?!
+# treatment of noadapt case
+# general tidying!
 
 import random
 import sys
