@@ -1,67 +1,91 @@
-a=[]
-p=[]
-s=[]
-k=[]
-fg=[]
-n=[]
-rcp=[]
-scal=[]
-
-
 import csv
-with open('ireland_input.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        a.append(row)
 
-with open('ireland_popdens.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        p.append(row)
+class IrelandClass(object):
+
+    a=[]
+    p=[]
+    s=[]
+    k=[]
+    fg=[]
+    n=[]
+    rcp=[]
+    scal=[]
 
 
-with open('ireland_seg.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        s.append(row)
 
+    with open('ireland_input.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            a.append(row)
+
+    with open('ireland_popdens.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            p.append(row)
+
+
+    with open('ireland_seg.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            s.append(row)
+
+            
 #the cap csv is ok, must have been sorted at some point
-with open('ireland_cap_1.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        k.append(row)
+
+    with open('ireland_cap_1.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            k.append(row)
 
 #ok too, must have been sorted
-with open('flood_gev.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        fg.append(row)
+    with open('flood_gev.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            fg.append(row)
 #also ok
-with open('ainmneacha.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        n.append(row)
+    with open('ainmneacha.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            n.append(row)
 
 # will go with 45 for now
-with open('rcp45.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        rcp.append(row)
+    with open('rcp45.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            rcp.append(row)
 
-with open('ireland_scalars.csv', 'rb') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        scal.append(row)
-        
+    with open('ireland_scalars.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            scal.append(row)
 
-def integrand(e,region):
-    sigma_k = float(k[region][0]);
-    sigma_l = float(p[region][0]);
     vsl = 9.444821238556;
     mu = 0.01;
-    rho = 0.518144214230081;        
-    a_ = a[region];
-    return (1-rho)*area(e,a_)*(sigma_k*psi(e)+sigma_l*vsl*mu)
+    rho = 0.518144214230081;
+
+
+    ln = len(n)
+    c = [0 for x in range(ln)]
+    loc = [0 for x in range(ln)]
+    scale = [0 for x in range(ln)]
+#    for i in range(len(n)):
+    for i in range(ln):
+        c[i] = -float(fg[i][2])
+        loc[i] = float(fg[i][0])
+        scale[i] = float(fg[i][1])
+
+    pc = 7.7598
+    lv = 5.376
+    sigma_k = float(k[i][0]);    
+    
+        
+data = IrelandClass()
+
+def integrand(e,region):
+    sigma_k = float(data.k[region][0]);
+    sigma_l = float(data.p[region][0]);
+    a_ = data.a[region];
+    return (1-data.rho)*area(e,a_)*(sigma_k*psi(e)+sigma_l*data.vsl*data.mu)
 
 def area(y,a_):
     a=[]
@@ -75,16 +99,10 @@ def psi(e):
     return e/(1+e)
 
 def length(r):
-    al = a[r]
+    al = data.a[r]
     return al[16]
         
-def flood_rv(region):
-    c = -float(fg[region][2])
-    loc = float(fg[region][0])
-    scale = float(fg[region][1])
-    return genextreme.rvs(c,loc,scale)
-#        return genextreme.rvs(c(region),loc(region),scale(region))
-
 
 def slr(region,time):
-    return float(rcp[region][time])
+    return float(data.rcp[region][time])
+
