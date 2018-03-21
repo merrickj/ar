@@ -21,7 +21,9 @@
 #				 no-adapt cost: 2288.81
 #				 retreat cost: 1850.19
 #				 Decision: Retreat
-
+# wall cost for slr is cheaper for retreat or noadapt for slr for nearly every region. this calculation does not include overtopping storm risk for wall cost. however my current 'correct' form does not include benefit of slr protection associated with wall
+# modified fn() to include flooding cost associated with slr. more regions build walls, but still some funny results with retreat versus wall cost (even though this is partly due to retreat_height() - however when I compare wall cost there, I do not include overtopping flood risk associated). It does not seem logically the retreat approach, but if want to go for it, I suppose it can be defended, just quite arbitrary
+# Iorras will be latest one to check
 
 import random
 import sys
@@ -42,6 +44,7 @@ def flood_rv(r):
 def retreat_h(r):
     # we will say the retreat area is to the 100 year flood + end period sea level rise
     # this should be slr in final period (because height is a little arbitrary for us here anyway)
+#    return slr(r,0) + genextreme.ppf(0.5, data.c[r],data.loc[r],data.scale[r])
     return slr(r,13) + genextreme.ppf(0.99, data.c[r],data.loc[r],data.scale[r])
 
 
@@ -87,10 +90,10 @@ class adaptretreat:
             self.slr[i] = slr(i,time)
 
     def fn(self,s,r):
-        return (self.beta[r]*self.g(s,r)) - self.dcost(r,s)
+        return (self.beta[r]*self.g(s,r)) +self.calculate_inundation_cost(r,self.slr[r],0) - self.dcost(r,s)
 
     def fn_true(self,s,r):
-        return self.g(s,r) - self.dcost(r,s)
+        return self.g(s,r) +self.calculate_inundation_cost(r,self.slr[r],0) - self.dcost(r,s)
     
     def decide_action(self,j):
         for i in range(self.regions):
@@ -113,6 +116,7 @@ class adaptretreat:
                     localcost = self.protectcost[i]
                 elif j==0:
                     self.noadaptcost[i] = self.calculate_inundation_cost(i,retreat_h(i),0)
+#                    self.noadaptcost[i] = self.calculate_inundation_cost(i,self.slr[i],0)
                     localcost = self.noadaptcost[i]
                 if j == 0 and self.retreatcost[i] < localcost:
                     self.retreat[i] = 1
@@ -167,6 +171,7 @@ class adaptretreat:
 
             depr = 1
             h = retreat_h(i)
+#            h = self.slr[i]
 
             plannedicost = self.calculate_inundation_cost(i,h,depr)
             # retreat cost comprises the actual cost of moving and the cost of inundation of land (assume it is planned and orderly so it is only the land value lost while the capital on the land itself is depreciated
@@ -229,11 +234,13 @@ class adaptretreat:
             self.update_slr(iter+1)
             for i in range(self.regions):
                 if iter==0:
+                    #print self.calculate_inundation_cost(i,self.slr[i],0) - self.dcost(i,0),self.dcost(i,0), '**alert**'
                     print data.n[i],':(beta = %.2f)' %(self.beta[i])
                     if self.protectcost[i]>0:
                         print '\t\t\t\t wall cost: %.2f' %(self.protectcost[i])
                     else:
-                        print '\t\t\t\t wall cost: too expensive',self.cost(i,retreat_h(i))                    
+                        print '\t\t\t\t wall cost: too expensive',self.cost(i,retreat_h(i))
+#                        print '\t\t\t\t wall cost: too expensive',self.cost(i,self.slr[i])                    
                         print '\t\t\t\t no-adapt cost: %.2f' %(self.noadaptcost[i])
                     print '\t\t\t\t retreat cost: %.2f' %(self.retreatcost[i])
                     if self.retreat[i]>0:

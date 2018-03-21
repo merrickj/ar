@@ -153,6 +153,8 @@ def expected_damage(lb,r):
 def f(s):
 #    print 'cost:',cost
     return g(s,float(rcp[r_temp][2]),r_temp) - dcost(r_temp,s+lb_temp)
+#    return g(s,float(rcp[r_temp][2]),r_temp) - dcost(r_temp,s+lb_temp) + inundcost(r_temp,lb_temp,0)
+#    return g(s,float(rcp[r_temp][2]),r_temp) - dcost(r_temp,s) + 0.04*inundcost(r_temp,lb_temp,0)
 
 def length(r):
     al = a[r]
@@ -245,19 +247,23 @@ meanflood = float(floodl[1])
 lb_temp=float(rcp[r_temp][2])
 
 
-
 import numpy as np
 xxa=np.arange(20.0)
+xxa_eile=np.arange(20.0)
 yya=np.arange(20.0)
+yya_eile=np.arange(20.0)
 cy=np.zeros(20)
 for xx in range(0,20,1):
     level=xx*.05
     yy = g(level,lb_temp,r_temp)
+    yy_eile = g(level,lb_temp,r_temp) + 0.04*inundcost(r_temp,lb_temp,0)
     xxa[xx]=float(level)
+    xxa_eile[xx]=float(level)+lb_temp
     yya[xx]=float(yy)
+    yya_eile[xx]=float(yy_eile)    
 
+#    cy[xx] = dcost(r_temp,level+lb_temp)
     cy[xx] = dcost(r_temp,level+lb_temp)
-
 
 from scipy.optimize import fsolve
 s_inter = fsolve(f,meanflood*3)
@@ -266,6 +272,8 @@ s_inter = fsolve(f,meanflood*3)
 print 'retreat cost would be',retreatcost(r_temp,2+lb_temp)
 print 'inundation cost would be with depreciation',inundcost(r_temp,2+lb_temp,1)
 print 'inundation cost would be with no depreciation',inundcost(r_temp,2+lb_temp,0)
+print 'inundation cost slr',inundcost(r_temp,lb_temp,0)
+print 'wall cost slr',cost(r_temp,lb_temp)
 print 'wall cost would be',cost(r_temp,s_inter+lb_temp)
 print 'intersection s is',s_inter
 
@@ -275,10 +283,19 @@ import matplotlib.pyplot as plt
 
 plt.scatter(xxa,yya)
 plt.plot(xxa,yya)
+#plt.scatter(xxa,yya_eile)
+#plt.plot(xxa,yya_eile)
+#plt.scatter(xxa,yya_eile)
+#plt.plot(xxa,yya_eile)
 
+print 's_inter',s_inter
+print 'dcost',dcost(r_temp,s_inter+lb_temp), 'g',g(s_inter,lb_temp,r_temp)
+#,'icost',0.04*inundcost(r_temp,lb_temp,0)
+print 'lb_temp',lb_temp
 
 plt.plot(xxa,cy)
-plt.scatter(s_inter,dcost(r_temp,s_inter+lb_temp),color='r',marker='x',s=200,linewidths=3)
+#plt.scatter(s_inter+lb_temp,dcost(r_temp,s_inter+lb_temp),color='r',marker='x',s=200,linewidths=3)
+plt.scatter(s_inter,dcost(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
 plt.title(n[r_temp])
 plt.xlabel("metres")
 plt.ylabel("millions of $")
