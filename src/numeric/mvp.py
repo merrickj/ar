@@ -295,11 +295,18 @@ class adaptretreat:
 
 #parameters:(beta, number of iterations)
 arg=sys.argv
-ar_1 = adaptretreat(float(arg[1]),1)
+if len(arg) == 2:
+    ar_1 = adaptretreat(float(arg[1]),1)
+    print("currently hard coded to run for 1 iteration")
+else:
+    print("please enter beta parameter as 1st argument")
+    print("e.g. python3 mvp.py 1")
+    print("(note currently hard coded for 1 iteration, so second argument not needed)")
+    sys.exit()
 print(arg)
 ar_1.populate()
 ar_1.update()
-#print('[0 = no action, 1 = action]'
+print('(0 = no action, 1 = action)')
 
 
 
