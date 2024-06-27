@@ -4,7 +4,9 @@
 # James Merrick, July 13th 2016
 # Updated structure following discussion with Melanie Craxton
 
-# REMEMBER - GIT STRUCTURE IN PLACE!
+# James Merrick, June 27th 2024
+# convert to python3, improve messaging around arguments
+
 
 import random
 import sys
@@ -28,10 +30,10 @@ class adaptretreat:
         self.prob_act = [self.init_prob_act for x in range(self.regions)]
         self.hits =  [0 for x in range(self.regions)]
         #then we will see who wants to act (assuming in this version that they all should if behaving rationa
-        print 'initial:'
+        print('initial:')
         self.plot_eile()    
         self.decide_action()
-        print 'before flooding:'
+        print('before flooding:')
         self.plot_eile()    
 
 
@@ -69,7 +71,7 @@ class adaptretreat:
                         self.transition[i] = 1
                                                                         
     def update(self):
-        print 'after observation:\t P(act)'
+        print('after observation:\t P(act)')
         for iter in range(self.n_iterations):
             self.transition = [0 for x in range(self.regions)]
             self.is_damaged()
@@ -78,10 +80,10 @@ class adaptretreat:
             self.decide_action()
             self.plot_eile()  
             if sum(self.action) == self.regions:
-                print 'ends at observation ',iter
-                print 'alpha this run: ', self.alpha
-                print 'total number of floods due to no action', sum(self.hits)
-                print 'number of floods due to no action by region', (self.hits)
+                print('ends at observation ',iter)
+                print('alpha this run: ', self.alpha)
+                print('total number of floods due to no action', sum(self.hits))
+                print('number of floods due to no action by region', (self.hits))
                 break
 
 
@@ -89,11 +91,11 @@ class adaptretreat:
         agent_colors = {0:'0', 1:'1'}        
         roundedlist=[round(x,2) for x in self.prob_act]
         for i in range(self.regions):
-                print agent_colors[self.action[i]],
+                print(agent_colors[self.action[i]])
                 if (self.action[i] == 1) and (self.transition[i] != 1):
                     roundedlist[i] = '-'
-        print '\t',roundedlist
-        print ''
+        print('\t',roundedlist)
+        print('')
 
 
 
@@ -101,11 +103,16 @@ class adaptretreat:
 #parameters:(number of regions, prob flood, prob action, number of iterations)
 #ar_1 = adaptretreat(10,.2,.5,500)
 arg=sys.argv
-ar_1 = adaptretreat(int(float(arg[1])),float(arg[2]),float(arg[3]),500)
-print arg
+if len(arg) == 4:
+    ar_1 = adaptretreat(int(float(arg[1])),float(arg[2]),float(arg[3]),500)
+else:
+    print("Please enter 3 arguments in following order: no. regions, p(flood), p(action)")
+    print("e.g. python3 mvp.py 10 0.2 0.5")
+    sys.exit()
+print(arg)
 ar_1.populate()
 ar_1.update()
-print '[0 = no action, 1 = action]'
+print('[0 = no action, 1 = action]')
 
 
 
