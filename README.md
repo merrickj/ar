@@ -15,8 +15,8 @@ There are two versions of the model:
 
 ## Running model
 
-To run toy model: `python3 src/toy/toy.py arg1 arg2 arg3', where
-* `arg1': number of regions
+To run toy model: ``python3 src/toy/toy.py arg1 arg2 arg3``, where
+* ``arg1``: number of regions
 * 
 
 
