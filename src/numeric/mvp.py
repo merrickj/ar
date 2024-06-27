@@ -223,7 +223,7 @@ class adaptretreat:
 
     def truee(self):
         # Read JSON file
-        with open('true.json') as data_file:
+        with open('../../data/true.json') as data_file:
             self.true_expect = json.load(data_file)
 # This was to output the json file the first time round. It is slow to calculate the expectations, so sent it out, and now it uploads it every time. Once a wall is built the expectation for future flooding changes, thus we re-calculate the expectation in those cases above
 #        for i in range(self.regions):
