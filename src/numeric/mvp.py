@@ -95,23 +95,23 @@ class adaptretreat:
                       # then go ahead and build wall to sea level height. otherwise we accept the flooding and inundation. question, what about the multiperiod aspect ? need to work that out in paper so
                     
                 if s_inter > 0:
-                    print 'build some flood wall'
+                    print('build some flood wall')
                     localfloodprotect = self.cost(i,s_inter[0]+self.slr[i]) 
                     if self.calculate_inundation_cost(i,self.slr[i],0) < self.cost(i,self.slr[i]):
-                        print 'Total benefit-cost ALERT (left side of diagram)'
+                        print('Total benefit-cost ALERT (left side of diagram)')
                         # just an alert for now, won't do anything about it
                     self.action[i] = max(self.action[i], s_inter[0] + self.slr[i])
                 else:
                     localfloodprotect = self.cost(i,self.slr[i])
                     if self.calculate_inundation_cost(i,self.slr[i],0) > localfloodprotect:
-                        print 'compare', self.calculate_inundation_cost(i,self.slr[i],0), localfloodprotect
+                        print('compare', self.calculate_inundation_cost(i,self.slr[i],0), localfloodprotect)
                         self.action[i] = max(self.action[i], self.slr[i])
                     else:
                         self.action[i] = self.action[i]
                         
                 self.protectcost[i] = self.cost(i,self.action[i])
-                print 'protectcost',self.protectcost[i],data.n[i],self.action[i]
-#                print 'check here',self.action[i],self.slr[i],data.n[i]
+                print('protectcost',self.protectcost[i],data.n[i],self.action[i])
+#                print('check here',self.action[i],self.slr[i],data.n[i])
                 localcost = self.protectcost[i]
 
                 if j==0 and self.protectcost[i]==0:
@@ -120,7 +120,7 @@ class adaptretreat:
                         self.retreat[i]=1
 
 
-                print 'compare retreat,wall',self.retreatcost[i],self.cost(i,retreat_h(i))
+                print('compare retreat,wall',self.retreatcost[i],self.cost(i,retreat_h(i)))
                 
                 # if s_inter less than zero, cost of wall too great
                 # in first period, decide between wall/noadapt or retreat. After that only considerincreases to wall height 
@@ -136,7 +136,7 @@ class adaptretreat:
 ##                    self.noadaptcost[i] = self.calculate_inundation_cost(i,self.slr[i],0)
 #                    localcost = self.noadaptcost[i]
 #                if j == 0 and self.retreatcost[i] < localcost:
-#                    print 'retreat here'
+#                    print('retreat here')
 #                    self.retreat[i] = 1
 
                 # here track what would be optimum if no beta, and check if any region `incorrectly retreated'
@@ -210,7 +210,7 @@ class adaptretreat:
                 self.actual_damage[i] = self.damage(s,i)
                 # calculate damage that would have occurred if wall built to `optimal' height
                 self.counterdamage[i] = self.counterdamage[i] + self.alt_damage(s,i)
-                #print data.n[i],s,self.actual_damage[i]
+                #print(data.n[i],s,self.actual_damage[i])
                 self.total_damage[i] = self.total_damage[i] + self.actual_damage[i]
 
      
@@ -218,7 +218,7 @@ class adaptretreat:
         for i in range(self.regions):
             if self.retreat[i] != 1:
                 self.expected_damage[i] = self.true_expect[i] * self.beta[i]
-                #print 'expected',data.n[i],self.expected_damage[i]
+                #print('expected',data.n[i],self.expected_damage[i])
 
 
     def truee(self):
@@ -243,52 +243,52 @@ class adaptretreat:
 
     def update(self):
         for iter in range(self.n_iterations):
-            print '**********************************'
-            print 'iteration',iter
-            print '**********************************'            
+            print('**********************************')
+            print('iteration',iter)
+            print('**********************************')
             self.decide_action(iter)
             self.calculate_actual_damage()
             self.calculate_expected_damage()
             self.update_slr(iter+1)
             for i in range(self.regions):
                 if iter==0:
-                    #print self.calculate_inundation_cost(i,self.slr[i],0) - self.dcost(i,0),self.dcost(i,0), '**alert**'
-                    print data.n[i],':(beta = %.2f)' %(self.beta[i])
+                    #print(self.calculate_inundation_cost(i,self.slr[i],0) - self.dcost(i,0),self.dcost(i,0), '**alert**')
+                    print(data.n[i],':(beta = %.2f)' %(self.beta[i]))
                     if self.protectcost[i]>0:
-                        print '\t\t\t\t wall cost: %.2f' %(self.protectcost[i])
+                        print('\t\t\t\t wall cost: %.2f' %(self.protectcost[i]))
                     else:
-                        print '\t\t\t\t wall cost: too expensive',self.cost(i,retreat_h(i))
-#                        print '\t\t\t\t wall cost: too expensive',self.cost(i,self.slr[i])                    
-                        print '\t\t\t\t no-adapt cost: %.2f' %(self.noadaptcost[i])
-                    print '\t\t\t\t retreat cost: %.2f' %(self.retreatcost[i])
+                        print('\t\t\t\t wall cost: too expensive',self.cost(i,retreat_h(i)))
+#                        print('\t\t\t\t wall cost: too expensive',self.cost(i,self.slr[i]))                   
+                        print('\t\t\t\t no-adapt cost: %.2f' %(self.noadaptcost[i]))
+                    print('\t\t\t\t retreat cost: %.2f' %(self.retreatcost[i]))
                     if self.retreat[i]>0:
-                        print '\t\t\t\t Decision: Retreat'
+                        print('\t\t\t\t Decision: Retreat')
                     else:
                         if self.protectcost[i]>0:
-                            print '\t\t\t\t Decision: Build wall of height: %.2f' %(self.action[i])
-                            print iter
+                            print('\t\t\t\t Decision: Build wall of height: %.2f' %(self.action[i]))
+                            print(iter)
                         else:
-                            print '\t\t\t\t Decision: chance on'
+                            print('\t\t\t\t Decision: chance on')
                 elif self.retreat[i] != 1:
-                    print data.n[i],':(beta = %.2f)' %(self.beta[i])
-                    print '\t\t\t\t Decision: cumulative wall height: %.2f' %(self.action[i])
-                    print '\t\t\t\t Decision: cumulative wall cost: %.2f' %(self.protectcost[i])
+                    print(data.n[i],':(beta = %.2f)' %(self.beta[i]))
+                    print('\t\t\t\t Decision: cumulative wall height: %.2f' %(self.action[i]))
+                    print('\t\t\t\t Decision: cumulative wall cost: %.2f' %(self.protectcost[i]))
             self.update_beta()
 # to here
             
         for i in range(self.regions):
             if self.retreat[i]>0:
                 if self.wrongretreat[i]==0:
-                    print data.n[i],' no costs incurred due to beta (retreated when should have retreated)'
+                    print(data.n[i],' no costs incurred due to beta (retreated when should have retreated)')
                 else:
-                    print data.n[i],' retreated when should not have retreated at cost %.2f' %(self.retreatcost[i]-self.truecost[i])
+                    print(data.n[i],' retreated when should not have retreated at cost %.2f' %(self.retreatcost[i]-self.truecost[i]))
             elif self.truecost[i] < self.protectcost[i]:
-                print data.n[i],' overbuilt protection at cost %.2f' %(self.protectcost[i] - self.truecost[i])
+                print(data.n[i],' overbuilt protection at cost %.2f' %(self.protectcost[i] - self.truecost[i]))
             else:
-                print data.n[i],' underbuilt protection at cost from realised flooding relative to counter %.2f' %(self.total_damage[i] - self.counterdamage[i])
-        print self.wrongretreat
+                print(data.n[i],' underbuilt protection at cost from realised flooding relative to counter %.2f' %(self.total_damage[i] - self.counterdamage[i]))
+        print(self.wrongretreat)
                 
-        print self.truecost
+        print(self.truecost)
 
 
 
@@ -296,10 +296,10 @@ class adaptretreat:
 #parameters:(beta, number of iterations)
 arg=sys.argv
 ar_1 = adaptretreat(float(arg[1]),1)
-print arg
+print(arg)
 ar_1.populate()
 ar_1.update()
-#print '[0 = no action, 1 = action]'
+#print('[0 = no action, 1 = action]'
 
 
 

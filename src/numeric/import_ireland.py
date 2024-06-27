@@ -13,18 +13,18 @@ class IrelandClass(object):
 
 
 
-    with open('ireland_input.csv', 'rb') as f:
+    with open('../../data/ireland_input.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             a.append(row)
 
-    with open('ireland_popdens.csv', 'rb') as f:
+    with open('../../data/ireland_popdens.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             p.append(row)
 
 
-    with open('ireland_seg.csv', 'rb') as f:
+    with open('../../data/ireland_seg.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             s.append(row)
@@ -32,29 +32,29 @@ class IrelandClass(object):
             
 #the cap csv is ok, must have been sorted at some point
 
-    with open('ireland_cap_1.csv', 'rb') as f:
+    with open('../../data/ireland_cap_1.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             k.append(row)
 
 #ok too, must have been sorted
-    with open('flood_gev.csv', 'rb') as f:
+    with open('../../data/flood_gev.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             fg.append(row)
 #also ok
-    with open('ainmneacha.csv', 'rb') as f:
+    with open('../../data/ainmneacha.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             n.append(row)
 
 # will go with 45 for now
-    with open('rcp45.csv', 'rb') as f:
+    with open('../../data/rcp45.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             rcp.append(row)
 
-    with open('ireland_scalars.csv', 'rb') as f:
+    with open('../../data/ireland_scalars.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             scal.append(row)
