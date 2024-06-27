@@ -107,7 +107,7 @@ if len(arg) == 4:
     ar_1 = adaptretreat(int(float(arg[1])),float(arg[2]),float(arg[3]),500)
 else:
     print("Please enter 3 arguments in following order: no. regions, p(flood), p(action)")
-    print("e.g. python3 mvp.py 10 0.2 0.5")
+    print("e.g. python3 toy.py 10 0.2 0.5")
     sys.exit()
 print(arg)
 ar_1.populate()
