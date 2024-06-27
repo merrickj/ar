@@ -17,8 +17,11 @@ There are two versions of the model:
 
 To run toy model: ``python3 src/toy/toy.py arg1 arg2 arg3``, where
 * ``arg1``: number of regions
-* 
+* ``arg2``: probability of flood in fraction terms
+* ``arg3``: probability of action
 
+To run numeric model: ``python3 src/numeric/mvp.py arg1``, where
+* ``arg1``: beta
 
 ## Develop branch
 The develop branch contains files in development not yet in mainstream workflow
