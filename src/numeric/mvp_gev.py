@@ -323,3 +323,41 @@ print('(0 = no action, 1 = action)')
 
 
 
+
+
+
+
+####
+# notes below taken from gev.py
+####
+
+#Note c is negative of Delavane's xi parameter
+# https://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.stats.genextreme.html
+
+#Notes
+
+#For c=0, genextreme is equal to gumbel_r. The probability density function for genextreme is:
+
+#genextreme.pdf(x, c) =
+#    exp(-exp(-x))*exp(-x),                    for c==0
+#    exp(-(1-c*x)**(1/c))*(1-c*x)**(1/c-1),    for x <= 1/c, c > 0
+#Note that several sources and software packages use the opposite convention for the sign of the shape parameter c.
+
+#genextreme takes c as a shape parameter.
+
+##The probability density above is defined in the `standardized' form. To shift and/or scale the distribution use the loc and scale parameters. Specifically, genextreme.pdf(x, c, loc, scale) is identically equivalent to genextreme.pdf(y, c) / scale with y = (x - loc) / scale.
+# this latter point however does not account for a further scaling factor Delavane has in her paper. she divides by sigma. This seems to bring surge from fraction of meter to meters
+
+
+#So for Ireland8502 and 8515
+#   r            mu         sigma     xi        
+#Ireland8502 0.06265796 0.03573306 0.2064354 
+#Ireland8515 0.06157673 0.03526684 0.2098331
+
+#xi=0.2098331
+#sigma=0.03526684
+#mu=0.06157673
+
+#c = -xi
+#loc = mu
+#scale = sigma

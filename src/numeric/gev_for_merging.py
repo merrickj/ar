@@ -1,131 +1,3 @@
-a=[]
-p=[]
-s=[]
-k=[]
-fg=[]
-n=[]
-rcp=[]
-scal=[]
-
-import csv
-with open('../../data/ireland_input.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        a.append(row)
-
-with open('../../data/ireland_popdens.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        p.append(row)
-
-
-with open('../../data/ireland_seg.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        s.append(row)
-
-#the cap csv is ok, must have been sorted at some point
-with open('../../data/ireland_cap_1.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        k.append(row)
-
-#ok too, must have been sorted
-with open('../../data/flood_gev.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        fg.append(row)
-#also ok
-with open('../../data/ainmneacha.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        n.append(row)
-
-with open('../../data/rcp_ie.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        rcp.append(row)
-
-with open('../../data/ireland_scalars.csv', 'r') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        scal.append(row)
-
-
-        
-from scipy.stats import genextreme
-
-#Note c is negative of Delavane's xi parameter
-# https://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.stats.genextreme.html
-
-#Notes
-
-#For c=0, genextreme is equal to gumbel_r. The probability density function for genextreme is:
-
-#genextreme.pdf(x, c) =
-#    exp(-exp(-x))*exp(-x),                    for c==0
-#    exp(-(1-c*x)**(1/c))*(1-c*x)**(1/c-1),    for x <= 1/c, c > 0
-#Note that several sources and software packages use the opposite convention for the sign of the shape parameter c.
-
-#genextreme takes c as a shape parameter.
-
-##The probability density above is defined in the `standardized' form. To shift and/or scale the distribution use the loc and scale parameters. Specifically, genextreme.pdf(x, c, loc, scale) is identically equivalent to genextreme.pdf(y, c) / scale with y = (x - loc) / scale.
-# this latter point however does not account for a further scaling factor Delavane has in her paper. she divides by sigma. This seems to bring surge from fraction of meter to meters
-
-
-#So for Ireland8502 and 8515
-#   r            mu         sigma     xi        
-#Ireland8502 0.06265796 0.03573306 0.2064354 
-#Ireland8515 0.06157673 0.03526684 0.2098331
-
-#xi=0.2098331
-#sigma=0.03526684
-#mu=0.06157673
-
-#c = -xi
-#loc = mu
-#scale = sigma
-
-def flood_gev(r):
-    c = -float(fg[r][2])
-    loc = float(fg[r][0])
-    scale = float(fg[r][1])
-    out = []
-    out.append(genextreme.rvs(c,loc,scale))
-    out.append(genextreme.stats(c,loc,scale,moments='m'))
-    return out
-
-
-
-import math
-#to integrate the function x**2 between 0 and 1
-from scipy.integrate import quad
-
-
-#what happened area15?
-def area(y,a_):
-    a=[]
-    for i in range(0,15):
-        temp=float(a_[i])
-        a.append(temp)
-
-    return a[0]*max(0,min(0.5,y))+(a[1]+a[0])/2*max(0,min(1,y-0.5))+a[1]*max(0,min(0.5,y-1.5))+a[2]*max(0,min(1,y-2))+a[3]*max(0,min(1,y-3))+a[4]*max(0,min(1,y-4))+a[5]*max(0,min(1,y-5))+a[6]*max(0,min(1,y-6))+a[7]*max(0,min(1,y-7))+a[8]*max(0,min(1,y-8))+a[9]*max(0,min(1,y-9))+a[10]*max(0,min(1,y-10))+a[11]*max(0,min(1,y-11))+a[12]*max(0,min(1,y-12))+a[13]*max(0,min(1,y-13))+a[14]*max(0,y-14)
-
-
-def psi(e):
-    e = e/1.0
-    return e/(1+e);
-
-def integrand(e,r):
-    sigma_k = float(k[r][0]);
-    vsl = 9.444821238556;
-    mu = 0.01;
-    sigma_l = float(p[r][0]);
-    rho = 0.518144214230081;
-    a_ = a[r];
-    return (1-rho)*area(e,a_)*(sigma_k*psi(e)+sigma_l*vsl*mu)
-
-
 def damage(lb,e,r):
     out = quad(integrand,lb,e,r)
     return out[0]
@@ -202,7 +74,7 @@ def inundcost(r,h,depr):
 
 
 for i in range(0,29):
-    floodl = flood_gev(i)
+    floodl = flood_gev(i) # this can be replaced with other functions in mvp
     flood = float(floodl[0])
     meanflood = float(floodl[1])
     for l in range(0,3):
@@ -328,3 +200,15 @@ sys.exit()
 #Costs(retreatGrid,seg,t,'relocation')$xtat(t,at) = [tstept/tstep(at)]*sum(xtat(t,at), pos([coastareaA(R,at,seg,retreatGrid)] - [coastareaA(R,at-1,seg,retreatGrid)]) * [movefactor*ypc(at,seg)*1e-6*popdens(at,seg) + capmovefactor*mobcapfrac*capital(at,seg) + democost*(1-mobcapfrac)*capital(at,seg)]);
 
 #note ypc*1e-6*popdens = capital / 3
+
+
+
+# to be deleted once removed below
+def flood_gev(r):
+    c = -float(fg[r][2])
+    loc = float(fg[r][0])
+    scale = float(fg[r][1])
+    out = []
+    out.append(genextreme.rvs(c,loc,scale))
+    out.append(genextreme.stats(c,loc,scale,moments='m'))
+    return out
