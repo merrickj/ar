@@ -155,10 +155,12 @@ class adaptretreat:
 
     def dcost(self,r,e):
         h = e+self.slr[r]
+        # note in gev.py the second term here was not there, ie.zero
         return data.pc*float(length(r))*2*h + float(length(r))*data.lv*1.7
 
     def cost(self,r,e):
         h = e #+self.slr[r]
+        # note in gev.py the second term here was not there, ie.zero
         return data.pc*float(length(r))*h*h + float(length(r))*data.lv*1.7*h
     
     def g(self,s,r):
@@ -172,6 +174,13 @@ class adaptretreat:
         else:
             return 0
 
+    def expected_damage(lb,r):
+        #    out = quad(g,0,1,2,3)
+        # redefine for this file, and delete if not adding much to gev mode
+        out = quad(g_eile,0,5,r)
+        return out[0]
+
+        
     # track damage in case optimal wall built
     def alt_damage(self,e,r):
         if (e + self.slr[r] - self.counteraction[r]) > 0:
@@ -183,6 +192,7 @@ class adaptretreat:
 
         
     def calculate_retreatcost(self):
+        # note in gev.py version of this function there is no plannedicost
         for i in range(self.regions):
             a_ = data.a[i]
 

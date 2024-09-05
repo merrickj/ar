@@ -1,78 +1,3 @@
-def damage(lb,e,r):
-    out = quad(integrand,lb,e,r)
-    return out[0]
-
-def g(s,lb,r):
-    c_temp = -float(fg[r][2])
-    loc_temp = float(fg[r][0])
-    scale_temp = float(fg[r][1])
-    return genextreme.pdf(s,c_temp,loc_temp,scale_temp) * damage(0,s+lb,r)
-
-def g_eile(s,r):
-    c_temp = -float(fg[r][2])
-    loc_temp = float(fg[r][0])
-    scale_temp = float(fg[r][1])
-#    lb = lb_temp
-    lb = float(rcp[r_temp][0])    
-    return genextreme.pdf(s,c_temp,loc_temp,scale_temp) * damage(0,s+lb,r)
-
-
-def expected_damage(lb,r):
-#    out = quad(g,0,1,2,3)
-    out = quad(g_eile,0,5,r)
-    return out[0]
-
-def f(s):
-#    print('cost:',cost)
-    return g(s,float(rcp[r_temp][2]),r_temp) - dcost(r_temp,s+lb_temp)
-#    return g(s,float(rcp[r_temp][2]),r_temp) - dcost(r_temp,s+lb_temp) + inundcost(r_temp,lb_temp,0)
-#    return g(s,float(rcp[r_temp][2]),r_temp) - dcost(r_temp,s) + 0.04*inundcost(r_temp,lb_temp,0)
-
-def length(r):
-    al = a[r]
-    return al[16]
-#    print('length', length)
-
-
-def cost(r,h):
-    pc = 7.7598    
-    return pc*float(length(r))*h*h
-
-def dcost(r,h):
-    pc = 7.7598    
-    return pc*float(length(r))*2*h
-# this can be modified to inclue some additional terms mentioned by nn
-
-def retreatcost(r,h):
-    a_ = a[r]
-    sigma_k = float(k[r][0]);
-
-    movefactor = float(scal[0][0])
-    capmovefactor = float(scal[1][0])
-    mobcapfrac = float(scal[2][0])
-    democost = float(scal[3][0])
-
-    return area(h,a_) * (movefactor*(sigma_k/3.0) + capmovefactor * mobcapfrac*sigma_k + democost*(1-mobcapfrac)*sigma_k)
-
-#Parameter ireland_scalars(*) /
-#'movefactor' 1, 
-#'capmovefactor' 0.1, 
-#'mobcapfrac' 0.25, 
-#'democost' 0.05 /;
-
-
-def inundcost(r,h,depr):
-    a_ = a[r]
-    sigma_k = float(k[r][0]);
-    #if planned, inundation costs are less (assume capital is depreciated when the flood comes. If not planned, greater hit
-    #depr = 1
-    # shortcut - note that value pretty constant for Ireland, Delavane converts it to land rent when done yearly (divide by 25)
-    lv = 5.376
-    return  lv * area(h,a_) + (1-depr) * sigma_k * area(h,a_)
-# note page 13 of Delavane allows for action in previous period etc.
-
-
-
 for i in range(0,29):
     floodl = flood_gev(i) # this can be replaced with other functions in mvp
     flood = float(floodl[0])
@@ -201,6 +126,8 @@ sys.exit()
 
 #note ypc*1e-6*popdens = capital / 3
 
+
+# when calling damage in integrated file, have to make sure self.action = 0 in gev mode
 
 
 # to be deleted once removed below
