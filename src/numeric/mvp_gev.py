@@ -17,6 +17,8 @@ import sys
 import json
 import io
 import matplotlib.pyplot as plt
+import numpy as np
+
 try:
     to_unicode = unicode
 except NameError:
@@ -330,55 +332,59 @@ if not GEV:
     print('(0 = no action, 1 = action)')
 
 else:
-
+    def g_gev(s,lb,r):
+        return genextreme.pdf(s,data.c[r],data.loc[r],data.scale[r]) * quad(integrand,0,s+lb,r)[0]
+    def dcost_gev(r,h):
+        return data.pc*float(length(r))*2*h
+    def f_gev(s):
+        return g_gev(s,float(data.rcp[r_temp][2]),r_temp) - dcost_gev(r_temp,s+lb_temp)
+    
     for i in range(0,29):
-        floodl = flood_gev(i) # this can be replaced with other functions in mvp
-        flood = float(floodl[0])
-        meanflood = float(floodl[1])
+        flood = float(genextreme.rvs(data.c[i],data.loc[i],data.scale[i]))
+        meanflood = float(genextreme.stats(data.c[i],data.loc[i],data.scale[i],moments='m'))
+
         for l in range(0,3):
             if l==0:
-                lb = float(rcp[i][0])
+                lb = float(data.rcp[i][0])
             elif l==1:
-                lb = float(rcp[i][1])
+                lb = float(data.rcp[i][1])
             else:
-                lb = float(rcp[i][2])
+                lb = float(data.rcp[i][2])
 
-        ans_c = damage(lb,lb+flood,i)
-        print('damage to region, ',n[i],' from flood level ',flood,' is ', ans_c, 'M$')
-        print('\t\t\t\t %.2fm sea level rise is %.2f million $' %(lb,ans_c))
+            ans_c = quad(integrand,lb,lb+flood,i)[0]
 
+            print('damage to region, ',data.n[i],' from flood level ',flood,' is ', ans_c, 'M$')
+            print('\t\t\t\t %.2fm sea level rise is %.2f million $' %(lb,ans_c))
 
     for i in range(0,29):
-        floodl = flood_gev(i)
-        meanflood = float(floodl[1])
+        meanflood = float(genextreme.stats(data.c[i],data.loc[i],data.scale[i],moments='m'))        
         ans_m,err_m = quad(integrand,0,meanflood,i)
-        print('mean damage to region %s from mean flood level %.2fm on top of:'%(n[i],meanflood))
+        print('mean damage to region %s from mean flood level %.2fm on top of:'%(data.n[i],meanflood))
         for l in range(0,3):
             if l==0:
-                lb = float(rcp[i][0])
+                lb = float(data.rcp[i][0])
             elif l==1:
-                lb = float(rcp[i][1])
+                lb = float(data.rcp[i][1])
             else:
-                lb = float(rcp[i][2])
+                lb = float(data.rcp[i][2])
 
-        ans_m = damage(lb,lb+meanflood,i)
-        print('\t\t\t\t%.2fm sea level rise is %.2f million $' %(lb,ans_m))
-        #    print('cost of wall for max case is %.2f million $' %(cost(i,lb+meanflood)))
+            ans_m = quad(integrand,lb,lb+meanflood,i)[0]
+            print('\t\t\t\t%.2fm sea level rise is %.2f million $' %(lb,ans_m))
+            #    print('cost of wall for max case is %.2f million $' %(cost(i,lb+meanflood)))
 
 
     # now we want to plot g(s) in our notation
     if len(sys.argv) == 2:
         r_temp = int(sys.argv[1])
     else:
-        print("Select region by order, e.g. 'python3 gev.py 1'")
+        print("Select region by order, e.g. 'python3 mvp_gev.py 1'")
         sys.exit()
 
-    c_temp = -float(fg[r_temp][2])
-    loc_temp = float(fg[r_temp][0])
-    scale_temp = float(fg[r_temp][1])
-    floodl = flood_gev(r_temp)
-    meanflood = float(floodl[1])
-    lb_temp=float(rcp[r_temp][2])
+    c_temp = data.c[r_temp]
+    loc_temp = data.loc[r_temp]
+    scale_temp = data.scale[r_temp]
+    meanflood = float(genextreme.stats(c_temp,loc_temp,scale_temp,moments='m'))        
+    lb_temp = float(data.rcp[r_temp][2])
 
 
     xxa=np.arange(20.0)
@@ -386,19 +392,19 @@ else:
     yya=np.arange(20.0)
     yya_eile=np.arange(20.0)
     cy=np.zeros(20)
+
     for xx in range(0,20,1):
         level=xx*.05
-        yy = g(level,lb_temp,r_temp)
-        yy_eile = g(level,lb_temp,r_temp) + 0.04*inundcost(r_temp,lb_temp,0)
+        yy = g_gev(level,lb_temp,r_temp)
+
         xxa[xx]=float(level)
-        xxa_eile[xx]=float(level)+lb_temp
         yya[xx]=float(yy)
-        yya_eile[xx]=float(yy_eile)    
 
-        #    cy[xx] = dcost(r_temp,level+lb_temp)
-        cy[xx] = dcost(r_temp,level+lb_temp)
+        cy[xx] = dcost_gev(r_temp,level+lb_temp)
 
-    s_inter = fsolve(f,meanflood*3)
+    s_inter = fsolve(f_gev,meanflood*3)
+
+    sys.exit()        
     #note that the actual amount built should be s_inter+lslr (same as dcost calculated) [that is, graph shows
     # ok, this can be basis..
     print('retreat cost would be',retreatcost(r_temp,2+lb_temp))
@@ -415,10 +421,6 @@ else:
 
     plt.scatter(xxa,yya)
     plt.plot(xxa,yya)
-    #plt.scatter(xxa,yya_eile)
-    #plt.plot(xxa,yya_eile)
-    #plt.scatter(xxa,yya_eile)
-    #plt.plot(xxa,yya_eile)
 
     print('s_inter',s_inter)
     print('dcost',dcost(r_temp,s_inter+lb_temp), 'g',g(s_inter,lb_temp,r_temp))
