@@ -16,6 +16,7 @@ import random
 import sys
 import json
 import io
+import matplotlib.pyplot as plt
 try:
     to_unicode = unicode
 except NameError:
@@ -308,20 +309,141 @@ class adaptretreat:
 
 
 
-#parameters:(beta, number of iterations)
-arg=sys.argv
-if len(arg) == 2:
-    ar_1 = adaptretreat(float(arg[1]),1)
-    print("currently hard coded to run for 1 iteration")
+
+GEV = True
+
+if not GEV:
+        
+    #parameters:(beta, number of iterations)
+    arg=sys.argv
+    if len(arg) == 2:
+        ar_1 = adaptretreat(float(arg[1]),1)
+        print("currently hard coded to run for 1 iteration")
+    else:
+        print("please enter beta parameter as 1st argument")
+        print("e.g. python3 mvp.py 1")
+        print("(note currently hard coded for 1 iteration, so second argument not needed)")
+        sys.exit()
+    print(arg)
+    ar_1.populate()
+    ar_1.update()
+    print('(0 = no action, 1 = action)')
+
 else:
-    print("please enter beta parameter as 1st argument")
-    print("e.g. python3 mvp.py 1")
-    print("(note currently hard coded for 1 iteration, so second argument not needed)")
+
+    for i in range(0,29):
+        floodl = flood_gev(i) # this can be replaced with other functions in mvp
+        flood = float(floodl[0])
+        meanflood = float(floodl[1])
+        for l in range(0,3):
+            if l==0:
+                lb = float(rcp[i][0])
+            elif l==1:
+                lb = float(rcp[i][1])
+            else:
+                lb = float(rcp[i][2])
+
+        ans_c = damage(lb,lb+flood,i)
+        print('damage to region, ',n[i],' from flood level ',flood,' is ', ans_c, 'M$')
+        print('\t\t\t\t %.2fm sea level rise is %.2f million $' %(lb,ans_c))
+
+
+    for i in range(0,29):
+        floodl = flood_gev(i)
+        meanflood = float(floodl[1])
+        ans_m,err_m = quad(integrand,0,meanflood,i)
+        print('mean damage to region %s from mean flood level %.2fm on top of:'%(n[i],meanflood))
+        for l in range(0,3):
+            if l==0:
+                lb = float(rcp[i][0])
+            elif l==1:
+                lb = float(rcp[i][1])
+            else:
+                lb = float(rcp[i][2])
+
+        ans_m = damage(lb,lb+meanflood,i)
+        print('\t\t\t\t%.2fm sea level rise is %.2f million $' %(lb,ans_m))
+        #    print('cost of wall for max case is %.2f million $' %(cost(i,lb+meanflood)))
+
+
+    # now we want to plot g(s) in our notation
+    if len(sys.argv) == 2:
+        r_temp = int(sys.argv[1])
+    else:
+        print("Select region by order, e.g. 'python3 gev.py 1'")
+        sys.exit()
+
+    c_temp = -float(fg[r_temp][2])
+    loc_temp = float(fg[r_temp][0])
+    scale_temp = float(fg[r_temp][1])
+    floodl = flood_gev(r_temp)
+    meanflood = float(floodl[1])
+    lb_temp=float(rcp[r_temp][2])
+
+
+    xxa=np.arange(20.0)
+    xxa_eile=np.arange(20.0)
+    yya=np.arange(20.0)
+    yya_eile=np.arange(20.0)
+    cy=np.zeros(20)
+    for xx in range(0,20,1):
+        level=xx*.05
+        yy = g(level,lb_temp,r_temp)
+        yy_eile = g(level,lb_temp,r_temp) + 0.04*inundcost(r_temp,lb_temp,0)
+        xxa[xx]=float(level)
+        xxa_eile[xx]=float(level)+lb_temp
+        yya[xx]=float(yy)
+        yya_eile[xx]=float(yy_eile)    
+
+        #    cy[xx] = dcost(r_temp,level+lb_temp)
+        cy[xx] = dcost(r_temp,level+lb_temp)
+
+    s_inter = fsolve(f,meanflood*3)
+    #note that the actual amount built should be s_inter+lslr (same as dcost calculated) [that is, graph shows
+    # ok, this can be basis..
+    print('retreat cost would be',retreatcost(r_temp,2+lb_temp))
+    print('inundation cost would be with depreciation',inundcost(r_temp,2+lb_temp,1))
+    print('inundation cost would be with no depreciation',inundcost(r_temp,2+lb_temp,0))
+    print('inundation cost slr',inundcost(r_temp,lb_temp,0))
+    print('wall cost slr',cost(r_temp,lb_temp))
+    print('wall cost would be',cost(r_temp,s_inter+lb_temp))
+    print('intersection s is',s_inter)
+
+    print('expected damages', expected_damage(lb_temp,r_temp))
+
+
+
+    plt.scatter(xxa,yya)
+    plt.plot(xxa,yya)
+    #plt.scatter(xxa,yya_eile)
+    #plt.plot(xxa,yya_eile)
+    #plt.scatter(xxa,yya_eile)
+    #plt.plot(xxa,yya_eile)
+
+    print('s_inter',s_inter)
+    print('dcost',dcost(r_temp,s_inter+lb_temp), 'g',g(s_inter,lb_temp,r_temp))
+    #,'icost',0.04*inundcost(r_temp,lb_temp,0)
+    print('lb_temp',lb_temp)
+
+    plt.plot(xxa,cy)
+    #plt.scatter(s_inter+lb_temp,dcost(r_temp,s_inter+lb_temp),color='r',marker='x',s=200,linewidths=3)
+    plt.scatter(s_inter,dcost(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
+    plt.title(n[r_temp])
+    plt.xlabel("metres")
+    plt.ylabel("millions of $")
+    plt.xlim(-.1,1.1)
+
+    # uncomment to show plot
+    plt.show()
+
+# uncomment to save plot
+#name = 'fig/'+str(n[r_temp])+'.png'
+#plt.savefig(name)
+    
+
     sys.exit()
-print(arg)
-ar_1.populate()
-ar_1.update()
-print('(0 = no action, 1 = action)')
+
+
 
 
 
