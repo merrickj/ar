@@ -404,33 +404,35 @@ else:
 
     s_inter = fsolve(f_gev,meanflood*3)
 
-    sys.exit()        
+    # TEMP removal of below print statements 9/9/24 
+    
     #note that the actual amount built should be s_inter+lslr (same as dcost calculated) [that is, graph shows
     # ok, this can be basis..
-    print('retreat cost would be',retreatcost(r_temp,2+lb_temp))
-    print('inundation cost would be with depreciation',inundcost(r_temp,2+lb_temp,1))
-    print('inundation cost would be with no depreciation',inundcost(r_temp,2+lb_temp,0))
-    print('inundation cost slr',inundcost(r_temp,lb_temp,0))
-    print('wall cost slr',cost(r_temp,lb_temp))
-    print('wall cost would be',cost(r_temp,s_inter+lb_temp))
-    print('intersection s is',s_inter)
+    #print('retreat cost would be',retreatcost(r_temp,2+lb_temp))
+    #print('inundation cost would be with depreciation',inundcost(r_temp,2+lb_temp,1))
+    #print('inundation cost would be with no depreciation',inundcost(r_temp,2+lb_temp,0))
+    #print('inundation cost slr',inundcost(r_temp,lb_temp,0))
+    #print('wall cost slr',cost(r_temp,lb_temp))
+    #print('wall cost would be',cost(r_temp,s_inter+lb_temp))
+    #print('intersection s is',s_inter)
 
-    print('expected damages', expected_damage(lb_temp,r_temp))
+    #print('expected damages', expected_damage(lb_temp,r_temp))
 
 
 
     plt.scatter(xxa,yya)
     plt.plot(xxa,yya)
 
-    print('s_inter',s_inter)
-    print('dcost',dcost(r_temp,s_inter+lb_temp), 'g',g(s_inter,lb_temp,r_temp))
+    # TEMP removal of below print statements 9/9/24 
+    #print('s_inter',s_inter)
+    #print('dcost',dcost(r_temp,s_inter+lb_temp), 'g',g(s_inter,lb_temp,r_temp))
     #,'icost',0.04*inundcost(r_temp,lb_temp,0)
-    print('lb_temp',lb_temp)
+    #print('lb_temp',lb_temp)
 
     plt.plot(xxa,cy)
-    #plt.scatter(s_inter+lb_temp,dcost(r_temp,s_inter+lb_temp),color='r',marker='x',s=200,linewidths=3)
-    plt.scatter(s_inter,dcost(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
-    plt.title(n[r_temp])
+    ##plt.scatter(s_inter+lb_temp,dcost(r_temp,s_inter+lb_temp),color='r',marker='x',s=200,linewidths=3)
+    # TEMP removal 9/9/24 plt.scatter(s_inter,dcost(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
+    plt.title(data.n[r_temp])
     plt.xlabel("metres")
     plt.ylabel("millions of $")
     plt.xlim(-.1,1.1)
