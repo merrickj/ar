@@ -177,12 +177,6 @@ class adaptretreat:
         else:
             return 0
 
-    def expected_damage(lb,r):
-        #    out = quad(g,0,1,2,3)
-        # redefine for this file, and delete if not adding much to gev mode
-        out = quad(g_eile,0,5,r)
-        return out[0]
-
         
     # track damage in case optimal wall built
     def alt_damage(self,e,r):
@@ -334,6 +328,10 @@ if not GEV:
 else:
     def g_gev(s,lb,r):
         return genextreme.pdf(s,data.c[r],data.loc[r],data.scale[r]) * quad(integrand,0,s+lb,r)[0]
+    def g_eile_gev(s,r):
+        lb = float(data.rcp[r][0])
+        return g_gev(s,lb,r)
+    
     def dcost_gev(r,h):
         return data.pc*float(length(r))*2*h
     def f_gev(s):
@@ -433,7 +431,7 @@ else:
     print('wall cost would be',cost_gev(r_temp,s_inter+lb_temp))
     print('intersection s is',s_inter)
 
-    #print('expected damages', expected_damage(lb_temp,r_temp))
+    print('expected damages', quad(g_eile_gev,0,5,r_temp)[0])
 
 
 
@@ -441,14 +439,14 @@ else:
     plt.plot(xxa,yya)
 
     # TEMP removal of below print statements 9/9/24 
-    #print('s_inter',s_inter)
-    #print('dcost',dcost(r_temp,s_inter+lb_temp), 'g',g(s_inter,lb_temp,r_temp))
+    print('s_inter',s_inter)
+    print('dcost',dcost_gev(r_temp,s_inter+lb_temp), 'g',g_gev(s_inter,lb_temp,r_temp))
     #,'icost',0.04*inundcost(r_temp,lb_temp,0)
-    #print('lb_temp',lb_temp)
+    print('lb_temp',lb_temp)
 
     plt.plot(xxa,cy)
     ##plt.scatter(s_inter+lb_temp,dcost(r_temp,s_inter+lb_temp),color='r',marker='x',s=200,linewidths=3)
-    # TEMP removal 9/9/24 plt.scatter(s_inter,dcost(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
+    plt.scatter(s_inter,dcost_gev(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
     plt.title(data.n[r_temp])
     plt.xlabel("metres")
     plt.ylabel("millions of $")
