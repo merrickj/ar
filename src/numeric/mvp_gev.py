@@ -338,6 +338,23 @@ else:
         return data.pc*float(length(r))*2*h
     def f_gev(s):
         return g_gev(s,float(data.rcp[r_temp][2]),r_temp) - dcost_gev(r_temp,s+lb_temp)
+    def retreatcost_gev(r,h):
+        a_ = data.a[r]
+
+        movefactor = float(data.scal[0][0])
+        capmovefactor = float(data.scal[1][0])
+        mobcapfrac = float(data.scal[2][0])
+        democost = float(data.scal[3][0])
+
+        return area(h,a_) * (movefactor*(data.sigma_k/3.0) + capmovefactor * mobcapfrac*data.sigma_k + democost*(1-mobcapfrac)*data.sigma_k)
+
+    def inundcost_gev(r,h,depr):
+        a_ = data.a[r]
+
+        return data.lv * area(h,a_) + (1-depr) * data.sigma_k * area(h,a_)
+
+    def cost_gev(r,h):
+        return data.pc * float(length(r)) * h * h
     
     for i in range(0,29):
         flood = float(genextreme.rvs(data.c[i],data.loc[i],data.scale[i]))
@@ -408,13 +425,13 @@ else:
     
     #note that the actual amount built should be s_inter+lslr (same as dcost calculated) [that is, graph shows
     # ok, this can be basis..
-    #print('retreat cost would be',retreatcost(r_temp,2+lb_temp))
-    #print('inundation cost would be with depreciation',inundcost(r_temp,2+lb_temp,1))
-    #print('inundation cost would be with no depreciation',inundcost(r_temp,2+lb_temp,0))
-    #print('inundation cost slr',inundcost(r_temp,lb_temp,0))
-    #print('wall cost slr',cost(r_temp,lb_temp))
-    #print('wall cost would be',cost(r_temp,s_inter+lb_temp))
-    #print('intersection s is',s_inter)
+    print('retreat cost would be',retreatcost_gev(r_temp,2+lb_temp))
+    print('inundation cost would be with depreciation',inundcost_gev(r_temp,2+lb_temp,1))
+    print('inundation cost would be with no depreciation',inundcost_gev(r_temp,2+lb_temp,0))
+    print('inundation cost slr',inundcost_gev(r_temp,lb_temp,0))
+    print('wall cost slr',cost_gev(r_temp,lb_temp))
+    print('wall cost would be',cost_gev(r_temp,s_inter+lb_temp))
+    print('intersection s is',s_inter)
 
     #print('expected damages', expected_damage(lb_temp,r_temp))
 
