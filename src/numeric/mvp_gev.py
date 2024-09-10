@@ -326,16 +326,23 @@ if not GEV:
     print('(0 = no action, 1 = action)')
 
 else:
+
+    rcp_gev = []
+    with open('../../data/rcp_ie.csv', 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            rcp_gev.append(row)
+    
     def g_gev(s,lb,r):
         return genextreme.pdf(s,data.c[r],data.loc[r],data.scale[r]) * quad(integrand,0,s+lb,r)[0]
     def g_eile_gev(s,r):
-        lb = float(data.rcp[r][0])
+        lb = float(rcp_gev[r][0])
         return g_gev(s,lb,r)
     
     def dcost_gev(r,h):
         return data.pc*float(length(r))*2*h
     def f_gev(s):
-        return g_gev(s,float(data.rcp[r_temp][2]),r_temp) - dcost_gev(r_temp,s+lb_temp)
+        return g_gev(s,float(rcp_gev[r_temp][2]),r_temp) - dcost_gev(r_temp,s+lb_temp)
     def retreatcost_gev(r,h):
         a_ = data.a[r]
 
@@ -353,6 +360,9 @@ else:
 
     def cost_gev(r,h):
         return data.pc * float(length(r)) * h * h
+
+
+
     
     for i in range(0,29):
         flood = float(genextreme.rvs(data.c[i],data.loc[i],data.scale[i]))
@@ -360,16 +370,16 @@ else:
 
         for l in range(0,3):
             if l==0:
-                lb = float(data.rcp[i][0])
+                lb = float(rcp_gev[i][0])
             elif l==1:
-                lb = float(data.rcp[i][1])
+                lb = float(rcp_gev[i][1])
             else:
-                lb = float(data.rcp[i][2])
-
+                lb = float(rcp_gev[i][2])
+                
             ans_c = quad(integrand,lb,lb+flood,i)[0]
 
-            print('damage to region, ',data.n[i],' from flood level ',flood,' is ', ans_c, 'M$')
-            print('\t\t\t\t %.2fm sea level rise is %.2f million $' %(lb,ans_c))
+        print('damage to region, ',data.n[i],' from flood level ',flood,' is ', ans_c, 'M$')
+        print('\t\t\t\t %.2fm sea level rise is %.2f million $' %(lb,ans_c))
 
     for i in range(0,29):
         meanflood = float(genextreme.stats(data.c[i],data.loc[i],data.scale[i],moments='m'))        
@@ -377,11 +387,11 @@ else:
         print('mean damage to region %s from mean flood level %.2fm on top of:'%(data.n[i],meanflood))
         for l in range(0,3):
             if l==0:
-                lb = float(data.rcp[i][0])
+                lb = float(rcp_gev[i][0])
             elif l==1:
-                lb = float(data.rcp[i][1])
+                lb = float(rcp_gev[i][1])
             else:
-                lb = float(data.rcp[i][2])
+                lb = float(rcp_gev[i][2])
 
             ans_m = quad(integrand,lb,lb+meanflood,i)[0]
             print('\t\t\t\t%.2fm sea level rise is %.2f million $' %(lb,ans_m))
@@ -399,7 +409,7 @@ else:
     loc_temp = data.loc[r_temp]
     scale_temp = data.scale[r_temp]
     meanflood = float(genextreme.stats(c_temp,loc_temp,scale_temp,moments='m'))        
-    lb_temp = float(data.rcp[r_temp][2])
+    lb_temp = float(rcp_gev[r_temp][2])
 
 
     xxa=np.arange(20.0)
