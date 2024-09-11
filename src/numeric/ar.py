@@ -3,7 +3,7 @@
 
 # James Merrick, September 2024
 # merge numeric_b (gev.py) into this structure
-# first step just allow a toggle between, should reproduce what a and b reproduce independently
+# to run in GEV mode, call `python3 ar.py GEV arg1'
 
 
 # Data from Ireland for this first version
@@ -40,7 +40,7 @@ def retreat_h(r):
 
 class adaptretreat:
     def __init__(self, init_beta, n_iterations):
-        self.regions= 29
+        self.regions = len(data.n)
         self.init_beta = init_beta
         self.n_iterations = n_iterations
         self.action = [0 for x in range(self.regions)]
@@ -364,38 +364,26 @@ else:
 
 
     
-    for i in range(0,29):
+    for i in range(0,len(data.n)):
         flood = float(genextreme.rvs(data.c[i],data.loc[i],data.scale[i]))
         meanflood = float(genextreme.stats(data.c[i],data.loc[i],data.scale[i],moments='m'))
 
-        for l in range(0,3):
-            if l==0:
-                lb = float(rcp_gev[i][0])
-            elif l==1:
-                lb = float(rcp_gev[i][1])
-            else:
-                lb = float(rcp_gev[i][2])
-                
-            ans_c = quad(integrand,lb,lb+flood,i)[0]
+
+        # we can pick one of three rcp scenarios, the third is picked for this printing
+        l = 2
+        lb = float(rcp_gev[i][l])
+        ans_c = quad(integrand,lb,lb+flood,i)[0]
 
         print('damage to region, ',data.n[i],' from flood level ',flood,' is ', ans_c, 'M$')
         print('\t\t\t\t %.2fm sea level rise is %.2f million $' %(lb,ans_c))
 
-    for i in range(0,29):
-        meanflood = float(genextreme.stats(data.c[i],data.loc[i],data.scale[i],moments='m'))        
+
         ans_m,err_m = quad(integrand,0,meanflood,i)
         print('mean damage to region %s from mean flood level %.2fm on top of:'%(data.n[i],meanflood))
-        for l in range(0,3):
-            if l==0:
-                lb = float(rcp_gev[i][0])
-            elif l==1:
-                lb = float(rcp_gev[i][1])
-            else:
-                lb = float(rcp_gev[i][2])
 
-            ans_m = quad(integrand,lb,lb+meanflood,i)[0]
-            print('\t\t\t\t%.2fm sea level rise is %.2f million $' %(lb,ans_m))
-            #    print('cost of wall for max case is %.2f million $' %(cost(i,lb+meanflood)))
+        ans_m = quad(integrand,lb,lb+meanflood,i)[0]
+        print('\t\t\t\t%.2fm sea level rise is %.2f million $' %(lb,ans_m))
+        
 
 
     # now we want to plot g(s) in our notation
@@ -429,8 +417,6 @@ else:
 
     s_inter = fsolve(f_gev,meanflood*3)
 
-    # TEMP removal of below print statements 9/9/24 
-    
     #note that the actual amount built should be s_inter+lslr (same as dcost calculated) [that is, graph shows
     # ok, this can be basis..
     print('retreat cost would be',retreatcost_gev(r_temp,2+lb_temp))
@@ -448,14 +434,12 @@ else:
     plt.scatter(xxa,yya)
     plt.plot(xxa,yya)
 
-    # TEMP removal of below print statements 9/9/24 
     print('s_inter',s_inter)
     print('dcost',dcost_gev(r_temp,s_inter+lb_temp), 'g',g_gev(s_inter,lb_temp,r_temp))
     #,'icost',0.04*inundcost(r_temp,lb_temp,0)
     print('lb_temp',lb_temp)
 
     plt.plot(xxa,cy)
-    ##plt.scatter(s_inter+lb_temp,dcost(r_temp,s_inter+lb_temp),color='r',marker='x',s=200,linewidths=3)
     plt.scatter(s_inter,dcost_gev(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
     plt.title(data.n[r_temp])
     plt.xlabel("metres")
