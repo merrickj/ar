@@ -306,12 +306,12 @@ class adaptretreat:
 
 
 
-GEV = True
 
-if not GEV:
+arg = sys.argv
+
+if arg[1] != "GEV":
         
     #parameters:(beta, number of iterations)
-    arg=sys.argv
     if len(arg) == 2:
         ar_1 = adaptretreat(float(arg[1]),1)
         print("currently hard coded to run for 1 iteration")
@@ -399,10 +399,10 @@ else:
 
 
     # now we want to plot g(s) in our notation
-    if len(sys.argv) == 2:
-        r_temp = int(sys.argv[1])
+    if len(arg) == 3:
+        r_temp = int(arg[2])
     else:
-        print("Select region by order, e.g. 'python3 mvp_gev.py 1'")
+        print("Select region by order, e.g. 'python3 mvp_gev.py GEV 1'")
         sys.exit()
 
     c_temp = data.c[r_temp]
