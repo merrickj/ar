@@ -24,7 +24,7 @@ To run toy model: ``python3 src/toy/toy.py arg1 arg2 arg3``, where
 To run numeric model: ``python3 src/numeric_a/ar.py arg1``, where
 * ``arg1``: beta, perception factor
 
-To run numeric model in a diagnositc mode that enables plotting for a selected region: ``python3 src/numeric_b/ar.py GEV arg1``, where
+To run numeric model in a diagnostic mode that enables plotting for a selected region: ``python3 src/numeric_b/ar.py GEV arg1``, where
 * ``arg1``: region number (i.e. select region)
 
 
