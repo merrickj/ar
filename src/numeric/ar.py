@@ -1,6 +1,11 @@
 # James Merrick, May 2018
 # Developed from minimum viable product of adapt/retreat model, and following discussions at Stanford University, April+May 2018
 
+# James Merrick, September 2024
+# merge numeric_b (gev.py) into this structure
+# to run in GEV mode, call `python3 ar.py GEV arg1'
+
+
 # Data from Ireland for this first version
 # this version leaves the dynamics aside for now. We here assume a one period decision. 
 # First year SLR is coming, and associated flooding, what are you going to do?
@@ -11,6 +16,9 @@ import random
 import sys
 import json
 import io
+import matplotlib.pyplot as plt
+import numpy as np
+
 try:
     to_unicode = unicode
 except NameError:
@@ -32,7 +40,7 @@ def retreat_h(r):
 
 class adaptretreat:
     def __init__(self, init_beta, n_iterations):
-        self.regions= 29
+        self.regions = len(data.n)
         self.init_beta = init_beta
         self.n_iterations = n_iterations
         self.action = [0 for x in range(self.regions)]
@@ -150,10 +158,12 @@ class adaptretreat:
 
     def dcost(self,r,e):
         h = e+self.slr[r]
+        # note in gev.py the second term here was not there, ie.zero
         return data.pc*float(length(r))*2*h + float(length(r))*data.lv*1.7
 
     def cost(self,r,e):
         h = e #+self.slr[r]
+        # note in gev.py the second term here was not there, ie.zero
         return data.pc*float(length(r))*h*h + float(length(r))*data.lv*1.7*h
     
     def g(self,s,r):
@@ -167,6 +177,7 @@ class adaptretreat:
         else:
             return 0
 
+        
     # track damage in case optimal wall built
     def alt_damage(self,e,r):
         if (e + self.slr[r] - self.counteraction[r]) > 0:
@@ -178,6 +189,7 @@ class adaptretreat:
 
         
     def calculate_retreatcost(self):
+        # note in gev.py version of this function there is no plannedicost
         for i in range(self.regions):
             a_ = data.a[i]
 
@@ -293,20 +305,158 @@ class adaptretreat:
 
 
 
-#parameters:(beta, number of iterations)
-arg=sys.argv
-if len(arg) == 2:
-    ar_1 = adaptretreat(float(arg[1]),1)
-    print("currently hard coded to run for 1 iteration")
+
+
+arg = sys.argv
+
+if arg[1] != "GEV":
+        
+    #parameters:(beta, number of iterations)
+    if len(arg) == 2:
+        ar_1 = adaptretreat(float(arg[1]),1)
+        print("currently hard coded to run for 1 iteration")
+    else:
+        print("please enter beta parameter as 1st argument")
+        print("e.g. python3 ar.py 1")
+        print("(note currently hard coded for 1 iteration, so second argument not needed)")
+        sys.exit()
+    print(arg)
+    ar_1.populate()
+    ar_1.update()
+    print('(0 = no action, 1 = action)')
+
 else:
-    print("please enter beta parameter as 1st argument")
-    print("e.g. python3 mvp.py 1")
-    print("(note currently hard coded for 1 iteration, so second argument not needed)")
+
+    rcp_gev = []
+    with open('../../data/rcp_ie.csv', 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            rcp_gev.append(row)
+    
+    def g_gev(s,lb,r):
+        return genextreme.pdf(s,data.c[r],data.loc[r],data.scale[r]) * quad(integrand,0,s+lb,r)[0]
+    def g_eile_gev(s,r):
+        lb = float(rcp_gev[r][0])
+        return g_gev(s,lb,r)
+    
+    def dcost_gev(r,h):
+        return data.pc*float(length(r))*2*h
+    def f_gev(s):
+        return g_gev(s,float(rcp_gev[r_temp][2]),r_temp) - dcost_gev(r_temp,s+lb_temp)
+    def retreatcost_gev(r,h):
+        a_ = data.a[r]
+
+        movefactor = float(data.scal[0][0])
+        capmovefactor = float(data.scal[1][0])
+        mobcapfrac = float(data.scal[2][0])
+        democost = float(data.scal[3][0])
+
+        return area(h,a_) * (movefactor*(data.sigma_k/3.0) + capmovefactor * mobcapfrac*data.sigma_k + democost*(1-mobcapfrac)*data.sigma_k)
+
+    def inundcost_gev(r,h,depr):
+        a_ = data.a[r]
+
+        return data.lv * area(h,a_) + (1-depr) * data.sigma_k * area(h,a_)
+
+    def cost_gev(r,h):
+        return data.pc * float(length(r)) * h * h
+
+
+
+    
+    for i in range(0,len(data.n)):
+        flood = float(genextreme.rvs(data.c[i],data.loc[i],data.scale[i]))
+        meanflood = float(genextreme.stats(data.c[i],data.loc[i],data.scale[i],moments='m'))
+
+
+        # we can pick one of three rcp scenarios, the third is picked for this printing
+        l = 2
+        lb = float(rcp_gev[i][l])
+        ans_c = quad(integrand,lb,lb+flood,i)[0]
+
+        print('damage to region, ',data.n[i],' from flood level ',flood,' is ', ans_c, 'M$')
+        print('\t\t\t\t %.2fm sea level rise is %.2f million $' %(lb,ans_c))
+
+
+        ans_m,err_m = quad(integrand,0,meanflood,i)
+        print('mean damage to region %s from mean flood level %.2fm on top of:'%(data.n[i],meanflood))
+
+        ans_m = quad(integrand,lb,lb+meanflood,i)[0]
+        print('\t\t\t\t%.2fm sea level rise is %.2f million $' %(lb,ans_m))
+        
+
+
+    # now we want to plot g(s) in our notation
+    if len(arg) == 3:
+        r_temp = int(arg[2])
+    else:
+        print("Select region by order, e.g. 'python3 ar.py GEV 1'")
+        sys.exit()
+
+    c_temp = data.c[r_temp]
+    loc_temp = data.loc[r_temp]
+    scale_temp = data.scale[r_temp]
+    meanflood = float(genextreme.stats(c_temp,loc_temp,scale_temp,moments='m'))        
+    lb_temp = float(rcp_gev[r_temp][2])
+
+
+    xxa=np.arange(20.0)
+    xxa_eile=np.arange(20.0)
+    yya=np.arange(20.0)
+    yya_eile=np.arange(20.0)
+    cy=np.zeros(20)
+
+    for xx in range(0,20,1):
+        level=xx*.05
+        yy = g_gev(level,lb_temp,r_temp)
+
+        xxa[xx]=float(level)
+        yya[xx]=float(yy)
+
+        cy[xx] = dcost_gev(r_temp,level+lb_temp)
+
+    s_inter = fsolve(f_gev,meanflood*3)
+
+    #note that the actual amount built should be s_inter+lslr (same as dcost calculated) [that is, graph shows
+    # ok, this can be basis..
+    print('retreat cost would be',retreatcost_gev(r_temp,2+lb_temp))
+    print('inundation cost would be with depreciation',inundcost_gev(r_temp,2+lb_temp,1))
+    print('inundation cost would be with no depreciation',inundcost_gev(r_temp,2+lb_temp,0))
+    print('inundation cost slr',inundcost_gev(r_temp,lb_temp,0))
+    print('wall cost slr',cost_gev(r_temp,lb_temp))
+    print('wall cost would be',cost_gev(r_temp,s_inter+lb_temp))
+    print('intersection s is',s_inter)
+
+    print('expected damages', quad(g_eile_gev,0,5,r_temp)[0])
+
+
+
+    plt.scatter(xxa,yya)
+    plt.plot(xxa,yya)
+
+    print('s_inter',s_inter)
+    print('dcost',dcost_gev(r_temp,s_inter+lb_temp), 'g',g_gev(s_inter,lb_temp,r_temp))
+    #,'icost',0.04*inundcost(r_temp,lb_temp,0)
+    print('lb_temp',lb_temp)
+
+    plt.plot(xxa,cy)
+    plt.scatter(s_inter,dcost_gev(r_temp,s_inter),color='r',marker='x',s=200,linewidths=3)
+    plt.title(data.n[r_temp])
+    plt.xlabel("metres")
+    plt.ylabel("millions of $")
+    plt.xlim(-.1,1.1)
+
+    # uncomment to show plot
+    plt.show()
+
+# uncomment to save plot
+#name = 'fig/'+str(n[r_temp])+'.png'
+#plt.savefig(name)
+    
+
     sys.exit()
-print(arg)
-ar_1.populate()
-ar_1.update()
-print('(0 = no action, 1 = action)')
+
+
 
 
 
@@ -318,3 +468,41 @@ print('(0 = no action, 1 = action)')
 
 
 
+
+
+
+
+####
+# notes below taken from gev.py
+####
+
+#Note c is negative of Delavane's xi parameter
+# https://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.stats.genextreme.html
+
+#Notes
+
+#For c=0, genextreme is equal to gumbel_r. The probability density function for genextreme is:
+
+#genextreme.pdf(x, c) =
+#    exp(-exp(-x))*exp(-x),                    for c==0
+#    exp(-(1-c*x)**(1/c))*(1-c*x)**(1/c-1),    for x <= 1/c, c > 0
+#Note that several sources and software packages use the opposite convention for the sign of the shape parameter c.
+
+#genextreme takes c as a shape parameter.
+
+##The probability density above is defined in the `standardized' form. To shift and/or scale the distribution use the loc and scale parameters. Specifically, genextreme.pdf(x, c, loc, scale) is identically equivalent to genextreme.pdf(y, c) / scale with y = (x - loc) / scale.
+# this latter point however does not account for a further scaling factor Delavane has in her paper. she divides by sigma. This seems to bring surge from fraction of meter to meters
+
+
+#So for Ireland8502 and 8515
+#   r            mu         sigma     xi        
+#Ireland8502 0.06265796 0.03573306 0.2064354 
+#Ireland8515 0.06157673 0.03526684 0.2098331
+
+#xi=0.2098331
+#sigma=0.03526684
+#mu=0.06157673
+
+#c = -xi
+#loc = mu
+#scale = sigma
