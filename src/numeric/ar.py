@@ -317,7 +317,7 @@ if arg[1] != "GEV":
         print("currently hard coded to run for 1 iteration")
     else:
         print("please enter beta parameter as 1st argument")
-        print("e.g. python3 mvp.py 1")
+        print("e.g. python3 ar.py 1")
         print("(note currently hard coded for 1 iteration, so second argument not needed)")
         sys.exit()
     print(arg)
@@ -402,7 +402,7 @@ else:
     if len(arg) == 3:
         r_temp = int(arg[2])
     else:
-        print("Select region by order, e.g. 'python3 mvp_gev.py GEV 1'")
+        print("Select region by order, e.g. 'python3 ar.py GEV 1'")
         sys.exit()
 
     c_temp = data.c[r_temp]
